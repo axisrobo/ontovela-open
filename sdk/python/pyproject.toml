@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ontovela"
+version = "0.1.0"
+description = "ONTOVELA Operational World Model v0.1 public Python client"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+]
+
+[tool.setuptools.packages.find]
+include = ["ontovela*"]

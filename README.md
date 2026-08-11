@@ -31,3 +31,4 @@ See `docs/repository-boundary.md`.
 - Example: `examples/warehouse-robot.md`
 - Compatibility policy: `docs/compatibility.md`
 - Go SDK: `sdk/go/`
+- Python SDK: `sdk/python/`
