@@ -25,6 +25,22 @@ Excluded:
 
 See `docs/repository-boundary.md`.
 
+## SDK Coverage Matrix
+
+| Endpoint family | Go | Python | TypeScript |
+| --- | --- | --- | --- |
+| Twins + lifecycle | yes | yes | yes |
+| Source bindings + revoke | yes | yes | yes |
+| Assertions + relations + reads | yes | yes | yes |
+| Resolved state + Reality View + sim-to-real | yes | yes | yes |
+| Snapshots (create/get/list/verify/diff) | yes | yes | yes |
+| Change feed + filters + audit export | yes | yes | yes |
+| Subscriptions (offsets + definitions) | yes | yes | yes |
+| Conflicts + impact + causal | yes | yes | yes |
+| Twin types + heartbeats | yes | yes | yes |
+
+Parity is enforced by `contract/` drift guards.
+
 ## v0.1 Contract
 
 - OpenAPI: `api/openapi.yaml`
