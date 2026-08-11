@@ -72,6 +72,15 @@ before(async () => {
       });
       return;
     }
+    if (request.method === "GET" && request.url?.startsWith("/v1/source-bindings")) {
+      sendJson(response, 200, { source_bindings: [{ id: "b1", source: "sensor:health", property: "health", authority_rank: 1, max_lag_seconds: 60, tenant_id: "acme" }] });
+      return;
+    }
+    if (request.method === "DELETE" && request.url === "/v1/source-bindings/b1") {
+      response.writeHead(204);
+      response.end();
+      return;
+    }
     if (request.method === "GET" && request.url === "/v1/twin-types") {
       sendJson(response, 200, { twin_types: [{ type_ref: "robot", description: "Robot twin", properties: ["location"], relations: ["located_in"] }] });
       return;
@@ -110,6 +119,14 @@ test("APIError carries status and message", async () => {
     () => client.getTwin("missing"),
     (error: unknown) => error instanceof APIError && error.status === 404 && error.serverMessage === "not found",
   );
+});
+
+test("list and revoke source bindings", async () => {
+  const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
+  const bindings = await client.listSourceBindings("sensor:health");
+  assert.equal(bindings.length, 1);
+  assert.equal(bindings[0].id, "b1");
+  await client.revokeSourceBinding("b1");
 });
 
 test("updateTwinLifecycle posts lifecycle", async () => {

@@ -120,6 +120,39 @@ class ClientTest(unittest.TestCase):
         finally:
             handler.do_GET = original_do_get
 
+    def test_list_and_revoke_source_bindings(self):
+        handler = _Handler
+        original_do_get = handler.do_GET
+        original_do_delete = handler.do_DELETE if hasattr(handler, "do_DELETE") else None
+
+        def do_get(self):
+            if self.path.startswith("/v1/source-bindings"):
+                self._json(200, {"source_bindings": [{"id": "b1", "source": "sensor:health", "property": "health", "authority_rank": 1, "max_lag_seconds": 60, "tenant_id": "acme"}]})
+                return
+            original_do_get(self)
+
+        def do_delete(self):
+            if self.path == "/v1/source-bindings/b1":
+                self.send_response(204)
+                self.end_headers()
+                return
+            self._json(404, {"error": "not found"})
+
+        handler.do_GET = do_get
+        handler.do_DELETE = do_delete
+        try:
+            client = Client(self.base_url, "acme")
+            bindings = client.list_source_bindings(source="sensor:health")
+            self.assertEqual(len(bindings), 1)
+            self.assertEqual(bindings[0].id, "b1")
+            client.revoke_source_binding("b1")
+        finally:
+            handler.do_GET = original_do_get
+            if original_do_delete is not None:
+                handler.do_DELETE = original_do_delete
+            else:
+                delattr(handler, "do_DELETE")
+
     def test_update_twin_lifecycle_posts_lifecycle(self):
         handler = _Handler
         original_do_post = handler.do_POST

@@ -65,6 +65,13 @@ class Client:
         body = self._request("GET", "/v1/twin-types")
         return [TwinType(**item) for item in body.get("twin_types", [])]
 
+    def list_source_bindings(self, source: Optional[str] = None) -> list:
+        body = self._request("GET", "/v1/source-bindings", query=_query(source=source))
+        return [SourceBinding(**item) for item in body.get("source_bindings", [])]
+
+    def revoke_source_binding(self, binding_id: str) -> None:
+        self._request("DELETE", f"/v1/source-bindings/{urllib.parse.quote(binding_id, safe='')}")
+
     def report_heartbeat(self, source: str) -> SourceHeartbeat:
         return self._post("/v1/heartbeats", {"source": source}, SourceHeartbeat)
 

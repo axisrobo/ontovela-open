@@ -83,6 +83,17 @@ export class OntovelaClient {
     return this.request<SourceBinding>("POST", "/v1/source-bindings", { body: input });
   }
 
+  async listSourceBindings(source?: string): Promise<SourceBinding[]> {
+    const query: Record<string, string> = {};
+    if (source !== undefined) query.source = source;
+    const body = await this.request<{ source_bindings: SourceBinding[] }>("GET", "/v1/source-bindings", { query });
+    return body.source_bindings;
+  }
+
+  async revokeSourceBinding(bindingId: string): Promise<void> {
+    await this.request<void>("DELETE", `/v1/source-bindings/${encodeURIComponent(bindingId)}`);
+  }
+
   async appendAssertion(input: StateAssertionInput, idempotencyKey: string): Promise<StateAssertion> {
     return this.request<StateAssertion>("POST", "/v1/assertions", { body: input, idempotencyKey });
   }

@@ -197,6 +197,34 @@ func TestReportHeartbeatPostsSource(t *testing.T) {
 	}
 }
 
+func TestListAndRevokeSourceBindings(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/v1/source-bindings" && r.Method == http.MethodGet:
+			if r.URL.Query().Get("source") != "sensor:health" {
+				t.Fatalf("query = %s", r.URL.RawQuery)
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"source_bindings": []SourceBinding{{SourceBindingInput: SourceBindingInput{ID: "b1", Source: "sensor:health"}}}})
+		case r.URL.Path == "/v1/source-bindings/b1" && r.Method == http.MethodDelete:
+			w.WriteHeader(http.StatusNoContent)
+		default:
+			t.Fatalf("path=%s method=%s", r.URL.Path, r.Method)
+		}
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bindings, err := client.ListSourceBindings(context.Background(), "sensor:health")
+	if err != nil || len(bindings) != 1 || bindings[0].ID != "b1" {
+		t.Fatalf("bindings=%#v err=%v", bindings, err)
+	}
+	if err := client.RevokeSourceBinding(context.Background(), "b1"); err != nil {
+		t.Fatalf("revoke: %v", err)
+	}
+}
+
 func TestUpdateTwinLifecyclePostsLifecycle(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/twins/robot:wh-17/lifecycle" {

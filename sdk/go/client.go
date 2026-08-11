@@ -71,6 +71,24 @@ func (c *Client) CreateSourceBinding(ctx context.Context, input SourceBindingInp
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/source-bindings", nil, input, "", &result)
 }
 
+func (c *Client) ListSourceBindings(ctx context.Context, source string) ([]SourceBinding, error) {
+	query := make(url.Values)
+	if source != "" {
+		query.Set("source", source)
+	}
+	var result struct {
+		SourceBindings []SourceBinding `json:"source_bindings"`
+	}
+	if err := c.doJSON(ctx, http.MethodGet, "/v1/source-bindings", query, nil, "", &result); err != nil {
+		return nil, err
+	}
+	return result.SourceBindings, nil
+}
+
+func (c *Client) RevokeSourceBinding(ctx context.Context, bindingID string) error {
+	return c.doJSON(ctx, http.MethodDelete, path.Join("/v1/source-bindings", bindingID), nil, nil, "", nil)
+}
+
 func (c *Client) AppendAssertion(ctx context.Context, input StateAssertionInput, idempotencyKey string) (StateAssertion, error) {
 	var result StateAssertion
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/assertions", nil, input, idempotencyKey, &result)

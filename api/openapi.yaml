@@ -18,6 +18,14 @@ paths:
       operationId: listTwinTypes
       responses:
         '200': { description: Registered twin packs, content: { application/json: { schema: { type: object, required: [twin_types], properties: { twin_types: { type: array, items: { $ref: '#/components/schemas/TwinType' } } } } } } }
+  /v1/source-bindings/{id}:
+    delete:
+      summary: Revoke a source binding
+      operationId: revokeSourceBinding
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '204': { description: Revoked }
+        '404': { $ref: '#/components/responses/NotFound' }
   /v1/heartbeats:
     post:
       summary: Report a source liveness heartbeat
@@ -67,6 +75,15 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
   /v1/source-bindings:
+    get:
+      summary: List source bindings for a tenant
+      operationId: listSourceBindings
+      parameters:
+        - name: source
+          in: query
+          schema: { type: string }
+      responses:
+        '200': { description: Source bindings, content: { application/json: { schema: { type: object, required: [source_bindings], properties: { source_bindings: { type: array, items: { $ref: '#/components/schemas/SourceBinding' } } } } } } }
     post:
       summary: Bind a source to a property or relation predicate
       operationId: createSourceBinding
