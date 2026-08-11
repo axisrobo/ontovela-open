@@ -33,3 +33,4 @@ See `docs/repository-boundary.md`.
 - Go SDK: `sdk/go/`
 - Python SDK: `sdk/python/`
 - TypeScript SDK: `sdk/typescript/`
+- Harmovela evidence adapter: `adapters/harmovela/`
