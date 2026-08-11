@@ -102,6 +102,24 @@ func TestCommitSubscriptionOffsetSendsConsumerAndOffset(t *testing.T) {
 	}
 }
 
+func TestListConflictsFiltersByStatus(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/conflicts" || r.URL.Query().Get("status") != "open" {
+			t.Fatalf("path=%s query=%s", r.URL.Path, r.URL.RawQuery)
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"conflicts": []ConflictRecord{{SubjectID: "bin:A-01", Property: "available", Status: "open"}}})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	records, err := client.ListConflicts(context.Background(), "open", 100)
+	if err != nil || len(records) != 1 || records[0].Status != "open" {
+		t.Fatalf("records=%#v err=%v", records, err)
+	}
+}
+
 func TestListAssertionsAndAPIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {

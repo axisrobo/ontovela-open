@@ -116,6 +116,21 @@ func (c *Client) DiffSnapshots(ctx context.Context, fromSnapshotID, toSnapshotID
 	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/snapshots", fromSnapshotID, "diff", toSnapshotID), nil, nil, "", &result)
 }
 
+func (c *Client) ListConflicts(ctx context.Context, status string, limit int) ([]ConflictRecord, error) {
+	query := make(url.Values)
+	if status != "" {
+		query.Set("status", status)
+	}
+	query.Set("limit", strconv.Itoa(limit))
+	var result struct {
+		Conflicts []ConflictRecord `json:"conflicts"`
+	}
+	if err := c.doJSON(ctx, http.MethodGet, "/v1/conflicts", query, nil, "", &result); err != nil {
+		return nil, err
+	}
+	return result.Conflicts, nil
+}
+
 func (c *Client) GetSubscriptionOffset(ctx context.Context, consumerID string) (SubscriptionOffset, error) {
 	var result SubscriptionOffset
 	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/subscriptions", consumerID), nil, nil, "", &result)

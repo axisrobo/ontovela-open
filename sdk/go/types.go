@@ -167,3 +167,13 @@ type SubscriptionOffset struct {
 	CommittedOffset int64     `json:"committed_offset"`
 	UpdatedAt       time.Time `json:"updated_at,omitempty"`
 }
+
+type ConflictRecord struct {
+	TenantID         string    `json:"tenant_id"`
+	SubjectID        string    `json:"subject_id"`
+	Property         string    `json:"property"`
+	Status           string    `json:"status"`
+	AssertionIDs     []string  `json:"assertion_ids"`
+	ResolutionPolicy string    `json:"resolution_policy"`
+	UpdatedAt        time.Time `json:"updated_at,omitempty"`
+}

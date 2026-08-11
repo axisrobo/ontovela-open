@@ -128,6 +128,20 @@ paths:
       responses:
         '200': { description: Updated cursor, content: { application/json: { schema: { $ref: '#/components/schemas/SubscriptionOffset' } } } }
         '409': { description: Offset rewind rejected, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /v1/conflicts:
+    get:
+      summary: List current tenant conflict records
+      operationId: listConflicts
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [open, resolved] }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 0, maximum: 500, default: 100 }
+      responses:
+        '200': { description: Current conflict records, content: { application/json: { schema: { type: object, required: [conflicts], properties: { conflicts: { type: array, items: { $ref: '#/components/schemas/ConflictRecord' } } } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
   /v1/reality-views:
     post:
       summary: Resolve a purpose-bound, freshness-aware operational view
@@ -278,4 +292,8 @@ components:
       type: object
       required: [tenant_id, consumer_id, committed_offset]
       properties: { tenant_id: { type: string }, consumer_id: { type: string }, committed_offset: { type: integer, minimum: 0 }, updated_at: { type: string, format: date-time } }
+    ConflictRecord:
+      type: object
+      required: [tenant_id, subject_id, property, status, assertion_ids, resolution_policy]
+      properties: { tenant_id: { type: string }, subject_id: { type: string }, property: { type: string }, status: { type: string, enum: [open, resolved] }, assertion_ids: { type: array, items: { type: string } }, resolution_policy: { type: string }, updated_at: { type: string, format: date-time } }
     Error: { type: object, required: [error], properties: { error: { type: string } } }
