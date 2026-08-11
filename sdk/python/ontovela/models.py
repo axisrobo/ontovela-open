@@ -199,6 +199,14 @@ class TwinType:
 
 
 @dataclass
+class CausalAnalytics:
+    twin_id: str
+    fan_out: int = 0
+    fan_in: int = 0
+    top_targets: dict = field(default_factory=dict)
+
+
+@dataclass
 class CausalLink:
     subject_id: str
     depth: int

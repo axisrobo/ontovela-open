@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from .models import (
+    CausalAnalytics,
     CausalLink,
     ChangeEvent,
     ConflictRecord,
@@ -139,6 +140,9 @@ class Client:
 
     def commit_subscription_offset(self, consumer_id: str, offset: int) -> SubscriptionOffset:
         return self._post(f"/v1/subscriptions/{urllib.parse.quote(consumer_id, safe='')}/commit", {"offset": offset}, SubscriptionOffset)
+
+    def compute_causal_analytics(self, twin_id: str) -> CausalAnalytics:
+        return self._request("GET", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/causal/analytics", model=CausalAnalytics)
 
     def compute_causal_lineage(self, twin_id: str, max_depth: int = 5, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None) -> list:
         query = _query(max_depth=max_depth, as_of=to_iso(as_of), as_known=to_iso(as_known))

@@ -197,6 +197,13 @@ type TwinType struct {
 	Relations   []string `json:"relations"`
 }
 
+type CausalAnalytics struct {
+	TwinID     string         `json:"twin_id"`
+	FanOut     int            `json:"fan_out"`
+	FanIn      int            `json:"fan_in"`
+	TopTargets map[string]int `json:"top_targets"`
+}
+
 type CausalLink struct {
 	SubjectID   string    `json:"subject_id"`
 	Depth       int       `json:"depth"`

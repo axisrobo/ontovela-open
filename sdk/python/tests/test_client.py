@@ -82,6 +82,25 @@ class ClientTest(unittest.TestCase):
         state = client.resolve_state("twin-1", "health", as_of=when, as_known=when)
         self.assertEqual(state.status, "resolved")
 
+    def test_compute_causal_analytics_parses_counts(self):
+        handler = _Handler
+        original_do_get = handler.do_GET
+
+        def patched(self):
+            if self.path.startswith("/v1/twins/twin-1/causal/analytics"):
+                self._json(200, {"twin_id": "twin-1", "fan_out": 3, "fan_in": 1, "top_targets": {"bin-1": 2}})
+                return
+            original_do_get(self)
+
+        handler.do_GET = patched
+        try:
+            client = Client(self.base_url, "acme")
+            analytics = client.compute_causal_analytics("twin-1")
+            self.assertEqual(analytics.fan_out, 3)
+            self.assertEqual(analytics.top_targets["bin-1"], 2)
+        finally:
+            handler.do_GET = original_do_get
+
     def test_compute_causal_lineage_parses_links(self):
         handler = _Handler
         original_do_get = handler.do_GET

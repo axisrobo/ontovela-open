@@ -120,6 +120,24 @@ func TestListConflictsFiltersByStatus(t *testing.T) {
 	}
 }
 
+func TestComputeCausalAnalyticsParsesCounts(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/twins/robot:wh-17/causal/analytics" {
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(CausalAnalytics{TwinID: "robot:wh-17", FanOut: 3, FanIn: 1, TopTargets: map[string]int{"bin:A-01": 2}})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	analytics, err := client.ComputeCausalAnalytics(context.Background(), "robot:wh-17")
+	if err != nil || analytics.FanOut != 3 || analytics.TopTargets["bin:A-01"] != 2 {
+		t.Fatalf("analytics=%#v err=%v", analytics, err)
+	}
+}
+
 func TestComputeCausalLineageParsesLinks(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/twins/robot:wh-17/causal" || r.URL.Query().Get("max_depth") != "5" {

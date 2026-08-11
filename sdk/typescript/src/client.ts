@@ -107,6 +107,10 @@ export class OntovelaClient {
     );
   }
 
+  async computeCausalAnalytics(twinId: string): Promise<import("./models").CausalAnalytics> {
+    return this.request<import("./models").CausalAnalytics>("GET", `/v1/twins/${encodeURIComponent(twinId)}/causal/analytics`);
+  }
+
   async computeCausalLineage(twinId: string, maxDepth = 5, temporal?: TemporalQuery): Promise<import("./models").CausalLink[]> {
     const query: Record<string, string> = { max_depth: String(maxDepth) };
     Object.assign(query, this.temporalQuery({}, temporal));

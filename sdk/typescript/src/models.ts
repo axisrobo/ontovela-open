@@ -165,6 +165,13 @@ export interface TwinType {
   relations: string[];
 }
 
+export interface CausalAnalytics {
+  twin_id: string;
+  fan_out: number;
+  fan_in: number;
+  top_targets: Record<string, number>;
+}
+
 export interface CausalLink {
   subject_id: string;
   depth: number;

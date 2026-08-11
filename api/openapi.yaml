@@ -173,6 +173,13 @@ paths:
         - $ref: '#/components/parameters/AsKnown'
       responses:
         '200': { description: Causal lineage, content: { application/json: { schema: { type: object, required: [causal_links], properties: { causal_links: { type: array, items: { $ref: '#/components/schemas/CausalLink' } } } } } } }
+  /v1/twins/{id}/causal/analytics:
+    get:
+      summary: Compute causal fan-in, fan-out, and target statistics
+      operationId: computeCausalAnalytics
+      parameters: [ { $ref: '#/components/parameters/TwinID' } ]
+      responses:
+        '200': { description: Causal analytics, content: { application/json: { schema: { $ref: '#/components/schemas/CausalAnalytics' } } } }
   /v1/twins/{id}/impact:
     get:
       summary: Compute twin impact paths over temporal relations
@@ -378,4 +385,8 @@ components:
       type: object
       required: [subject_id, depth, relation_id, target_id, event_time, source, evidence_ref]
       properties: { subject_id: { type: string }, depth: { type: integer, minimum: 1 }, relation_id: { type: string }, mechanism: { type: string }, target_id: { type: string }, event_time: { type: string, format: date-time }, source: { type: string }, evidence_ref: { type: string } }
+    CausalAnalytics:
+      type: object
+      required: [twin_id, fan_out, fan_in, top_targets]
+      properties: { twin_id: { type: string }, fan_out: { type: integer }, fan_in: { type: integer }, top_targets: { type: object, additionalProperties: { type: integer } } }
     Error: { type: object, required: [error], properties: { error: { type: string } } }
