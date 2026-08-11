@@ -1,0 +1,31 @@
+# ONTOVELA Open
+
+Apache-2.0 licensed public developer surface for [ONTOVELA](https://github.com/axisrobo/ONTOVELA), the Digital Enterprise Twin and Operational World Model Platform.
+
+This repository is the public adoption path: stable API contracts, Go/Python/TypeScript SDKs, examples, reference adapters, local developer binaries, documentation, and interoperability test fixtures.
+
+## Scope
+
+Included:
+
+- Versioned public schemas and OpenAPI/event contracts
+- Go, Python, and TypeScript SDKs
+- Local developer binary and Docker quickstart
+- Examples for assertions, temporal query, snapshot, subscriptions, and Reality Views
+- HTTP/webhook, Kafka/NATS, SQL/REST, and Harmovela reference adapters
+- Contract compatibility and Reality Integrity fixtures
+
+Excluded:
+
+- The ONTOVELA temporal state kernel and reconciliation implementation
+- Multi-tenant control plane, cross-region federation, HA, and commercial connectors
+- Enterprise identity integration, compliance packs, and premium support tooling
+
+See `docs/repository-boundary.md`.
+
+## v0.1 Contract
+
+- OpenAPI: `api/openapi.yaml`
+- Example: `examples/warehouse-robot.md`
+- Compatibility policy: `docs/compatibility.md`
+- Go SDK: `sdk/go/`

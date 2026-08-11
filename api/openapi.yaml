@@ -1,0 +1,225 @@
+openapi: 3.1.0
+info:
+  title: ONTOVELA Operational World Model API
+  version: 0.1.0
+  description: |
+    Public v0.1 contract for evidence-bearing operational state. Operational
+    writes are tenant-scoped, source-bound, evidence-bearing, and idempotent.
+    A resolved state is an explainable view over immutable claims, never a
+    destructive latest-value update.
+servers:
+  - url: http://localhost:8080
+security:
+  - TenantScope: []
+paths:
+  /v1/twins:
+    post:
+      summary: Register a TwinInstance
+      operationId: createTwin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwinInput'
+      responses:
+        '201': { description: Twin registered, content: { application/json: { schema: { $ref: '#/components/schemas/Twin' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/twins/{id}:
+    get:
+      summary: Read a TwinInstance
+      operationId: getTwin
+      parameters: [ { $ref: '#/components/parameters/TwinID' } ]
+      responses:
+        '200': { description: Twin, content: { application/json: { schema: { $ref: '#/components/schemas/Twin' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /v1/source-bindings:
+    post:
+      summary: Bind a source to a property or relation predicate
+      operationId: createSourceBinding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SourceBindingInput' }
+      responses:
+        '201': { description: Binding created, content: { application/json: { schema: { $ref: '#/components/schemas/SourceBinding' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/assertions:
+    post:
+      summary: Append an immutable state assertion
+      operationId: appendAssertion
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StateAssertionInput' }
+      responses:
+        '201': { description: Assertion appended or prior idempotent result returned, content: { application/json: { schema: { $ref: '#/components/schemas/StateAssertion' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /v1/relations:
+    post:
+      summary: Append an immutable temporal relation assertion
+      operationId: appendRelation
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RelationAssertionInput' }
+      responses:
+        '201': { description: Relation assertion appended, content: { application/json: { schema: { $ref: '#/components/schemas/RelationAssertion' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /v1/twins/{id}/assertions:
+    get:
+      summary: List a Twin's assertion history
+      operationId: listAssertions
+      parameters:
+        - $ref: '#/components/parameters/TwinID'
+        - $ref: '#/components/parameters/Property'
+        - $ref: '#/components/parameters/AsOf'
+        - $ref: '#/components/parameters/AsKnown'
+      responses:
+        '200': { description: Ordered assertion history, content: { application/json: { schema: { type: object, required: [assertions], properties: { assertions: { type: array, items: { $ref: '#/components/schemas/StateAssertion' } } } } } } }
+  /v1/twins/{id}/relations:
+    get:
+      summary: List a Twin's temporal relation evidence
+      operationId: listRelations
+      parameters:
+        - $ref: '#/components/parameters/TwinID'
+        - $ref: '#/components/parameters/Predicate'
+        - $ref: '#/components/parameters/AsOf'
+        - $ref: '#/components/parameters/AsKnown'
+      responses:
+        '200': { description: Ordered relation assertions, content: { application/json: { schema: { type: object, required: [relations], properties: { relations: { type: array, items: { $ref: '#/components/schemas/RelationAssertion' } } } } } } }
+  /v1/twins/{id}/state/{property}:
+    get:
+      summary: Resolve an explainable operational state view
+      operationId: resolveState
+      parameters:
+        - $ref: '#/components/parameters/TwinID'
+        - $ref: '#/components/parameters/PropertyPath'
+        - $ref: '#/components/parameters/AsOf'
+        - $ref: '#/components/parameters/AsKnown'
+      responses:
+        '200': { description: Resolved, unknown, or conflicted state view, content: { application/json: { schema: { $ref: '#/components/schemas/ResolvedState' } } } }
+  /v1/twins/{id}/snapshots:
+    post:
+      summary: Create a verifiable entity-scoped Reality Snapshot
+      operationId: createSnapshot
+      parameters:
+        - $ref: '#/components/parameters/TwinID'
+        - $ref: '#/components/parameters/AsOf'
+        - $ref: '#/components/parameters/AsKnown'
+      responses:
+        '201': { description: Snapshot created, content: { application/json: { schema: { $ref: '#/components/schemas/Snapshot' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /v1/snapshots/{id}:
+    get:
+      summary: Read a snapshot manifest
+      operationId: getSnapshot
+      parameters: [ { $ref: '#/components/parameters/SnapshotID' } ]
+      responses:
+        '200': { description: Snapshot, content: { application/json: { schema: { $ref: '#/components/schemas/Snapshot' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /v1/snapshots/{id}/verify:
+    get:
+      summary: Verify a snapshot digest
+      operationId: verifySnapshot
+      parameters: [ { $ref: '#/components/parameters/SnapshotID' } ]
+      responses:
+        '200': { description: Verification result, content: { application/json: { schema: { type: object, required: [snapshot_id, valid], properties: { snapshot_id: { type: string }, valid: { type: boolean } } } } } }
+  /v1/snapshots/{id}/diff/{other}:
+    get:
+      summary: Diff two snapshots of the same Twin
+      operationId: diffSnapshots
+      parameters:
+        - $ref: '#/components/parameters/SnapshotID'
+        - name: other
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Evidence-preserving change set, content: { application/json: { schema: { $ref: '#/components/schemas/SnapshotDiff' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /v1/changes:
+    get:
+      summary: Poll the tenant-scoped assertion and relation change feed
+      operationId: listChanges
+      parameters:
+        - name: after
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 0, maximum: 500, default: 100 }
+      responses:
+        '200': { description: Events after the supplied offset, content: { application/json: { schema: { type: object, required: [events], properties: { events: { type: array, items: { $ref: '#/components/schemas/ChangeEvent' } } } } } } }
+components:
+  securitySchemes:
+    TenantScope:
+      type: apiKey
+      in: header
+      name: X-Tenant-ID
+      description: Tenant scope. Production deployments additionally enforce an AEGIVELA principal and grant.
+  parameters:
+    TwinID: { name: id, in: path, required: true, schema: { type: string } }
+    SnapshotID: { name: id, in: path, required: true, schema: { type: string } }
+    Property: { name: property, in: query, schema: { type: string } }
+    PropertyPath: { name: property, in: path, required: true, schema: { type: string } }
+    Predicate: { name: predicate, in: query, schema: { type: string } }
+    AsOf: { name: as_of, in: query, description: Inclusive event-time cutoff, schema: { type: string, format: date-time } }
+    AsKnown: { name: as_known, in: query, description: Inclusive system-time cutoff, schema: { type: string, format: date-time } }
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 1 } }
+  responses:
+    BadRequest: { description: Invalid request, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    NotFound: { description: Resource not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Conflict: { description: Resource already exists, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  schemas:
+    StateKind: { type: string, enum: [observed, reported, derived, inferred, predicted, simulated] }
+    TwinInput:
+      type: object
+      required: [id, type_ref]
+      properties: { id: { type: string }, type_ref: { type: string }, lifecycle: { type: string, default: active }, external_bindings: { type: object } }
+    Twin:
+      allOf: [ { $ref: '#/components/schemas/TwinInput' }, { type: object, required: [tenant_id, created_at], properties: { tenant_id: { type: string }, created_at: { type: string, format: date-time } } } ]
+    SourceBindingInput:
+      type: object
+      required: [id, source, property, authority_rank, max_lag_seconds]
+      properties: { id: { type: string }, source: { type: string }, property: { type: string, description: Use relation:{predicate} for relation claims, or '*' for default scope }, authority_rank: { type: integer, minimum: 0 }, max_lag_seconds: { type: integer, minimum: 0 } }
+    SourceBinding:
+      allOf: [ { $ref: '#/components/schemas/SourceBindingInput' }, { type: object, required: [tenant_id, created_at], properties: { tenant_id: { type: string }, created_at: { type: string, format: date-time } } } ]
+    StateAssertionInput:
+      type: object
+      required: [subject_id, property, value, state_kind, event_time, source, evidence_ref]
+      properties: { subject_id: { type: string }, property: { type: string }, value: {}, state_kind: { $ref: '#/components/schemas/StateKind' }, event_time: { type: string, format: date-time }, source: { type: string }, confidence: { type: number, minimum: 0, maximum: 1 }, evidence_ref: { type: string } }
+    StateAssertion:
+      allOf: [ { $ref: '#/components/schemas/StateAssertionInput' }, { type: object, required: [id, tenant_id, system_time], properties: { id: { type: string }, tenant_id: { type: string }, system_time: { type: string, format: date-time } } } ]
+    RelationAssertionInput:
+      type: object
+      required: [source_id, predicate, target_id, state_kind, event_time, valid_from, source, evidence_ref]
+      properties: { source_id: { type: string }, predicate: { type: string }, target_id: { type: string }, state_kind: { $ref: '#/components/schemas/StateKind' }, event_time: { type: string, format: date-time }, valid_from: { type: string, format: date-time }, valid_to: { type: string, format: date-time }, source: { type: string }, confidence: { type: number, minimum: 0, maximum: 1 }, evidence_ref: { type: string } }
+    RelationAssertion:
+      allOf: [ { $ref: '#/components/schemas/RelationAssertionInput' }, { type: object, required: [id, tenant_id, system_time], properties: { id: { type: string }, tenant_id: { type: string }, system_time: { type: string, format: date-time } } } ]
+    ResolvedState:
+      type: object
+      required: [tenant_id, subject_id, property, status, freshness, resolution_policy]
+      properties: { tenant_id: { type: string }, subject_id: { type: string }, property: { type: string }, status: { type: string, enum: [resolved, unknown, conflicted] }, value: {}, state_kind: { $ref: '#/components/schemas/StateKind' }, source: { type: string }, confidence: { type: number }, supporting_assertion_id: { type: string }, conflicting_assertion_ids: { type: array, items: { type: string } }, freshness: { type: string, enum: [fresh, stale, unknown] }, resolution_policy: { type: string } }
+    Snapshot:
+      type: object
+      required: [id, tenant_id, subject_id, resolution_policy, digest, states, relations, created_at]
+      properties: { id: { type: string }, tenant_id: { type: string }, subject_id: { type: string }, as_of: { type: string, format: date-time }, as_known: { type: string, format: date-time }, resolution_policy: { type: string }, digest: { type: string }, states: { type: array, items: { $ref: '#/components/schemas/ResolvedState' } }, relations: { type: array, items: { $ref: '#/components/schemas/RelationAssertion' } }, created_at: { type: string, format: date-time } }
+    SnapshotDiff:
+      type: object
+      required: [from_snapshot_id, to_snapshot_id, added_properties, removed_properties, changed_properties, added_relation_ids, removed_relation_ids]
+      properties: { from_snapshot_id: { type: string }, to_snapshot_id: { type: string }, added_properties: { type: array, items: { type: string } }, removed_properties: { type: array, items: { type: string } }, changed_properties: { type: array, items: { type: string } }, added_relation_ids: { type: array, items: { type: string } }, removed_relation_ids: { type: array, items: { type: string } } }
+    ChangeEvent:
+      type: object
+      required: [offset, tenant_id, kind, subject_id, payload, occurred_at]
+      properties: { offset: { type: integer, minimum: 1 }, tenant_id: { type: string }, kind: { type: string, enum: [state_assertion.appended, relation_assertion.appended] }, subject_id: { type: string }, property: { type: string }, payload: {}, occurred_at: { type: string, format: date-time } }
+    Error: { type: object, required: [error], properties: { error: { type: string } } }
