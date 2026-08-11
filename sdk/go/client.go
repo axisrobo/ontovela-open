@@ -94,6 +94,11 @@ func (c *Client) AppendAssertion(ctx context.Context, input StateAssertionInput,
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/assertions", nil, input, idempotencyKey, &result)
 }
 
+func (c *Client) GetAssertion(ctx context.Context, assertionID string) (StateAssertion, error) {
+	var result StateAssertion
+	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/assertions", assertionID), nil, nil, "", &result)
+}
+
 func (c *Client) AppendRelation(ctx context.Context, input RelationAssertionInput, idempotencyKey string) (RelationAssertion, error) {
 	var result RelationAssertion
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/relations", nil, input, idempotencyKey, &result)

@@ -215,6 +215,24 @@ func TestReportHeartbeatPostsSource(t *testing.T) {
 	}
 }
 
+func TestGetAssertionByID(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/assertions/a1" {
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(StateAssertion{ID: "a1", TenantID: "acme"})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertion, err := client.GetAssertion(context.Background(), "a1")
+	if err != nil || assertion.ID != "a1" {
+		t.Fatalf("assertion=%#v err=%v", assertion, err)
+	}
+}
+
 func TestSubscriptionDefinitionCRUD(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {

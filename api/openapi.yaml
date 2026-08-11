@@ -141,6 +141,14 @@ paths:
         '201': { description: Assertion appended or prior idempotent result returned, content: { application/json: { schema: { $ref: '#/components/schemas/StateAssertion' } } } }
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /v1/assertions/{id}:
+    get:
+      summary: Read a state assertion by ID
+      operationId: getAssertion
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: Assertion, content: { application/json: { schema: { $ref: '#/components/schemas/StateAssertion' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
   /v1/relations:
     post:
       summary: Append an immutable temporal relation assertion

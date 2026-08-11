@@ -98,6 +98,10 @@ export class OntovelaClient {
     return this.request<StateAssertion>("POST", "/v1/assertions", { body: input, idempotencyKey });
   }
 
+  async getAssertion(assertionId: string): Promise<StateAssertion> {
+    return this.request<StateAssertion>("GET", `/v1/assertions/${encodeURIComponent(assertionId)}`);
+  }
+
   async appendRelation(input: RelationAssertionInput, idempotencyKey: string): Promise<RelationAssertion> {
     return this.request<RelationAssertion>("POST", "/v1/relations", { body: input, idempotencyKey });
   }

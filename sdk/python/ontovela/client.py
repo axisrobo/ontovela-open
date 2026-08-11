@@ -89,6 +89,9 @@ class Client:
     def create_source_binding(self, payload: SourceBinding) -> SourceBinding:
         return self._post("/v1/source-bindings", to_dict(payload), SourceBinding)
 
+    def get_assertion(self, assertion_id: str) -> StateAssertion:
+        return self._request("GET", f"/v1/assertions/{urllib.parse.quote(assertion_id, safe='')}", model=StateAssertion)
+
     def append_assertion(self, payload: StateAssertion, idempotency_key: str) -> StateAssertion:
         return self._post("/v1/assertions", self._assertion_dict(payload), StateAssertion, idempotency_key=idempotency_key)
 
