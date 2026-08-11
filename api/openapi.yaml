@@ -15,7 +15,6 @@ paths:
   /v1/version:
     get:
       summary: Report the build version
-      operationId: getVersion
       responses:
         '200': { description: Version, content: { application/json: { schema: { type: object, required: [version], properties: { version: { type: string } } } } } }
   /v1/twin-types:

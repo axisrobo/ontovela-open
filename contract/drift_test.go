@@ -18,6 +18,38 @@ type openAPISpec struct {
 	} `yaml:"paths"`
 }
 
+func TestSDKMethodCountsMatchAcrossLanguages(t *testing.T) {
+	root := filepath.Clean("../")
+	goSource, err := os.ReadFile(filepath.Join(root, "sdk", "go", "client.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	pythonSource, err := os.ReadFile(filepath.Join(root, "sdk", "python", "ontovela", "client.py"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tsSource, err := os.ReadFile(filepath.Join(root, "sdk", "typescript", "src", "client.ts"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	goMethods := methodSet(string(goSource), `func \(c \*Client\) (\w+)\(`)
+	pythonMethods := methodSet(string(pythonSource), `(?m)^    def (\w+)\(self`)
+	tsMethods := methodSet(string(tsSource), `  async (\w+)\(`)
+	for name := range goMethods {
+		if len(name) > 0 && name[0] >= 'a' && name[0] <= 'z' {
+			delete(goMethods, name)
+		}
+	}
+	for name := range pythonMethods {
+		if strings.HasPrefix(name, "_") {
+			delete(pythonMethods, name)
+		}
+	}
+	if len(goMethods) != len(pythonMethods) || len(goMethods) != len(tsMethods) {
+		t.Fatalf("SDK method counts differ: go=%d python=%d ts=%d", len(goMethods), len(pythonMethods), len(tsMethods))
+	}
+}
+
 func TestSDKMethodsCoverEveryOpenAPIOperation(t *testing.T) {
 	root := filepath.Clean("../")
 	specData, err := os.ReadFile(filepath.Join(root, "api", "openapi.yaml"))
