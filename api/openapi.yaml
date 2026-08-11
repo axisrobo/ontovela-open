@@ -52,6 +52,20 @@ paths:
       responses:
         '200': { description: Twin, content: { application/json: { schema: { $ref: '#/components/schemas/Twin' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
+  /v1/twins/{id}/lifecycle:
+    post:
+      summary: Transition a Twin lifecycle status
+      operationId: updateTwinLifecycle
+      parameters: [ { $ref: '#/components/parameters/TwinID' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [lifecycle], properties: { lifecycle: { type: string, enum: [active, retired, archived] } } }
+      responses:
+        '200': { description: Updated Twin, content: { application/json: { schema: { $ref: '#/components/schemas/Twin' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /v1/source-bindings:
     post:
       summary: Bind a source to a property or relation predicate

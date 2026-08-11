@@ -120,6 +120,29 @@ class ClientTest(unittest.TestCase):
         finally:
             handler.do_GET = original_do_get
 
+    def test_update_twin_lifecycle_posts_lifecycle(self):
+        handler = _Handler
+        original_do_post = handler.do_POST
+
+        def patched(self):
+            if self.path == "/v1/twins/twin-1/lifecycle":
+                length = int(self.headers.get("Content-Length", "0"))
+                body = json.loads(self.rfile.read(length) or b"{}")
+                if body.get("lifecycle") != "retired":
+                    self._json(400, {"error": "bad lifecycle"})
+                    return
+                self._json(200, {"id": "twin-1", "type_ref": "robot", "lifecycle": "retired", "tenant_id": "acme", "created_at": "2026-08-11T00:00:00Z"})
+                return
+            original_do_post(self)
+
+        handler.do_POST = patched
+        try:
+            client = Client(self.base_url, "acme")
+            twin = client.update_twin_lifecycle("twin-1", "retired")
+            self.assertEqual(twin.lifecycle, "retired")
+        finally:
+            handler.do_POST = original_do_post
+
     def test_list_snapshots_parses_list(self):
         handler = _Handler
         original_do_get = handler.do_GET

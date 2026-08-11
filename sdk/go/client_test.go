@@ -197,6 +197,29 @@ func TestReportHeartbeatPostsSource(t *testing.T) {
 	}
 }
 
+func TestUpdateTwinLifecyclePostsLifecycle(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/twins/robot:wh-17/lifecycle" {
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+		var payload struct{ Lifecycle string }
+		_ = json.NewDecoder(r.Body).Decode(&payload)
+		if payload.Lifecycle != "retired" {
+			t.Fatalf("lifecycle = %q", payload.Lifecycle)
+		}
+		_ = json.NewEncoder(w).Encode(Twin{TwinInput: TwinInput{ID: "robot:wh-17", TypeRef: "robot", Lifecycle: "retired"}, TenantID: "acme"})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	twin, err := client.UpdateTwinLifecycle(context.Background(), "robot:wh-17", "retired")
+	if err != nil || twin.Lifecycle != "retired" {
+		t.Fatalf("twin=%#v err=%v", twin, err)
+	}
+}
+
 func TestListTwinTypesParsesPacks(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/twin-types" {

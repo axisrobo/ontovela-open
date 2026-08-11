@@ -71,6 +71,10 @@ export class OntovelaClient {
     return this.request<Twin>("POST", "/v1/twins", { body: input });
   }
 
+  async updateTwinLifecycle(twinId: string, lifecycle: string): Promise<Twin> {
+    return this.request<Twin>("POST", `/v1/twins/${encodeURIComponent(twinId)}/lifecycle`, { body: { lifecycle } });
+  }
+
   async getTwin(twinId: string): Promise<Twin> {
     return this.request<Twin>("GET", `/v1/twins/${encodeURIComponent(twinId)}`);
   }

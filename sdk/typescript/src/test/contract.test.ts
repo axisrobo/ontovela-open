@@ -54,6 +54,15 @@ before(async () => {
       sendJson(response, 200, { snapshots: [{ id: "s1", tenant_id: "acme", subject_id: "twin-1", resolution_policy: "p", digest: "d", states: [], relations: [], created_at: "2026-08-11T00:00:00Z" }] });
       return;
     }
+    if (request.method === "POST" && request.url?.endsWith("/lifecycle")) {
+      let body = "";
+      request.on("data", (chunk) => (body += chunk));
+      request.on("end", () => {
+        const parsed = JSON.parse(body) as { lifecycle: string };
+        sendJson(response, 200, { id: "twin-1", type_ref: "robot", lifecycle: parsed.lifecycle, tenant_id: "acme" });
+      });
+      return;
+    }
     if (request.method === "POST" && request.url === "/v1/heartbeats") {
       let body = "";
       request.on("data", (chunk) => (body += chunk));
@@ -101,6 +110,12 @@ test("APIError carries status and message", async () => {
     () => client.getTwin("missing"),
     (error: unknown) => error instanceof APIError && error.status === 404 && error.serverMessage === "not found",
   );
+});
+
+test("updateTwinLifecycle posts lifecycle", async () => {
+  const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
+  const twin = await client.updateTwinLifecycle("twin-1", "retired");
+  assert.equal(twin.lifecycle, "retired");
 });
 
 test("computeCausalAnalytics parses counts", async () => {

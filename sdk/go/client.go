@@ -59,6 +59,13 @@ func (c *Client) GetTwin(ctx context.Context, twinID string) (Twin, error) {
 	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/twins", twinID), nil, nil, "", &result)
 }
 
+func (c *Client) UpdateTwinLifecycle(ctx context.Context, twinID, lifecycle string) (Twin, error) {
+	var result Twin
+	return result, c.doJSON(ctx, http.MethodPost, path.Join("/v1/twins", twinID, "lifecycle"), nil, struct {
+		Lifecycle string `json:"lifecycle"`
+	}{Lifecycle: lifecycle}, "", &result)
+}
+
 func (c *Client) CreateSourceBinding(ctx context.Context, input SourceBindingInput) (SourceBinding, error) {
 	var result SourceBinding
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/source-bindings", nil, input, "", &result)

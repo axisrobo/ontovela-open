@@ -71,6 +71,9 @@ class Client:
     def create_twin(self, twin_id: str, type_ref: str, lifecycle: Optional[str] = None) -> Twin:
         return self._post("/v1/twins", _prune({"id": twin_id, "type_ref": type_ref, "lifecycle": lifecycle}), Twin)
 
+    def update_twin_lifecycle(self, twin_id: str, lifecycle: str) -> Twin:
+        return self._post(f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/lifecycle", {"lifecycle": lifecycle}, Twin)
+
     def get_twin(self, twin_id: str) -> Twin:
         return self._get(f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}", Twin)
 
