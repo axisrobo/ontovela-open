@@ -108,6 +108,26 @@ paths:
         - $ref: '#/components/parameters/AsKnown'
       responses:
         '200': { description: Resolved, unknown, or conflicted state view, content: { application/json: { schema: { $ref: '#/components/schemas/ResolvedState' } } } }
+  /v1/subscriptions/{consumer_id}:
+    get:
+      summary: Read a consumer's committed change-feed offset
+      operationId: getSubscriptionOffset
+      parameters: [ { $ref: '#/components/parameters/ConsumerID' } ]
+      responses:
+        '200': { description: Committed offset, content: { application/json: { schema: { $ref: '#/components/schemas/SubscriptionOffset' } } } }
+  /v1/subscriptions/{consumer_id}/commit:
+    post:
+      summary: Commit a monotonic change-feed offset for a consumer
+      operationId: commitSubscriptionOffset
+      parameters: [ { $ref: '#/components/parameters/ConsumerID' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [offset], properties: { offset: { type: integer, minimum: 0 } } }
+      responses:
+        '200': { description: Updated cursor, content: { application/json: { schema: { $ref: '#/components/schemas/SubscriptionOffset' } } } }
+        '409': { description: Offset rewind rejected, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   /v1/reality-views:
     post:
       summary: Resolve a purpose-bound, freshness-aware operational view
@@ -185,6 +205,7 @@ components:
   parameters:
     TwinID: { name: id, in: path, required: true, schema: { type: string } }
     SnapshotID: { name: id, in: path, required: true, schema: { type: string } }
+    ConsumerID: { name: consumer_id, in: path, required: true, schema: { type: string } }
     Property: { name: property, in: query, schema: { type: string } }
     PropertyPath: { name: property, in: path, required: true, schema: { type: string } }
     Predicate: { name: predicate, in: query, schema: { type: string } }
@@ -253,4 +274,8 @@ components:
       type: object
       required: [offset, tenant_id, kind, subject_id, payload, occurred_at]
       properties: { offset: { type: integer, minimum: 1 }, tenant_id: { type: string }, kind: { type: string, enum: [state_assertion.appended, relation_assertion.appended] }, subject_id: { type: string }, property: { type: string }, payload: {}, occurred_at: { type: string, format: date-time } }
+    SubscriptionOffset:
+      type: object
+      required: [tenant_id, consumer_id, committed_offset]
+      properties: { tenant_id: { type: string }, consumer_id: { type: string }, committed_offset: { type: integer, minimum: 0 }, updated_at: { type: string, format: date-time } }
     Error: { type: object, required: [error], properties: { error: { type: string } } }

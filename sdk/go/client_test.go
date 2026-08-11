@@ -77,6 +77,31 @@ func TestCreateRealityViewPostsPurposeAndRequiredState(t *testing.T) {
 	}
 }
 
+func TestCommitSubscriptionOffsetSendsConsumerAndOffset(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/subscriptions/planner-1/commit" {
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+		var payload struct{ Offset int64 }
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatal(err)
+		}
+		if payload.Offset != 5 {
+			t.Fatalf("offset = %d", payload.Offset)
+		}
+		_ = json.NewEncoder(w).Encode(SubscriptionOffset{ConsumerID: "planner-1", CommittedOffset: 5})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cursor, err := client.CommitSubscriptionOffset(context.Background(), "planner-1", 5)
+	if err != nil || cursor.CommittedOffset != 5 {
+		t.Fatalf("cursor=%#v err=%v", cursor, err)
+	}
+}
+
 func TestListAssertionsAndAPIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {

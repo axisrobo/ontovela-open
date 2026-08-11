@@ -116,6 +116,18 @@ func (c *Client) DiffSnapshots(ctx context.Context, fromSnapshotID, toSnapshotID
 	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/snapshots", fromSnapshotID, "diff", toSnapshotID), nil, nil, "", &result)
 }
 
+func (c *Client) GetSubscriptionOffset(ctx context.Context, consumerID string) (SubscriptionOffset, error) {
+	var result SubscriptionOffset
+	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/subscriptions", consumerID), nil, nil, "", &result)
+}
+
+func (c *Client) CommitSubscriptionOffset(ctx context.Context, consumerID string, offset int64) (SubscriptionOffset, error) {
+	var result SubscriptionOffset
+	return result, c.doJSON(ctx, http.MethodPost, path.Join("/v1/subscriptions", consumerID, "commit"), nil, struct {
+		Offset int64 `json:"offset"`
+	}{Offset: offset}, "", &result)
+}
+
 func (c *Client) CreateRealityView(ctx context.Context, input RealityViewRequest, temporal TemporalQuery) (RealityView, error) {
 	var result RealityView
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/reality-views", temporal.values(), input, "", &result)

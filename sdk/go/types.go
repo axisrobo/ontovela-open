@@ -160,3 +160,10 @@ type ChangeEvent struct {
 	Payload    json.RawMessage `json:"payload"`
 	OccurredAt time.Time       `json:"occurred_at"`
 }
+
+type SubscriptionOffset struct {
+	TenantID        string    `json:"tenant_id"`
+	ConsumerID      string    `json:"consumer_id"`
+	CommittedOffset int64     `json:"committed_offset"`
+	UpdatedAt       time.Time `json:"updated_at,omitempty"`
+}
