@@ -1,0 +1,79 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  go-sdk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk/go
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - name: Test
+        run: go test ./...
+      - name: Vet
+        run: go vet ./...
+
+  go-adapters:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        adapter: [harmovela, prediction, httpwebhook, stream, sqlrest, edge, effect, mqtt, ros2, opcua]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - name: Test adapter ${{ matrix.adapter }}
+        working-directory: adapters/${{ matrix.adapter }}
+        run: go test ./...
+
+  contract:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contract
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - name: Drift guard
+        run: go test ./...
+
+  python:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test
+        run: python -m unittest tests.test_client -v
+
+  typescript:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk/typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install
+        run: npm ci
+      - name: Test
+        run: npm test
