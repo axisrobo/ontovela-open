@@ -34,3 +34,4 @@ See `docs/repository-boundary.md`.
 - Python SDK: `sdk/python/`
 - TypeScript SDK: `sdk/typescript/`
 - Harmovela evidence adapter: `adapters/harmovela/`
+- Prediction adapter: `adapters/prediction/`
