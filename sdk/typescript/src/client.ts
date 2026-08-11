@@ -112,8 +112,10 @@ export class OntovelaClient {
     return body.assertions;
   }
 
-  async listRelations(twinId: string, predicate?: string, temporal?: TemporalQuery): Promise<RelationAssertion[]> {
-    const query = this.temporalQuery(predicate === undefined ? {} : { predicate }, temporal);
+  async listRelations(twinId: string, predicate?: string, direction?: "outgoing" | "incoming", temporal?: TemporalQuery): Promise<RelationAssertion[]> {
+    const base: Record<string, string> = predicate === undefined ? {} : { predicate };
+    if (direction !== undefined) base.direction = direction;
+    const query = this.temporalQuery(base, temporal);
     const body = await this.request<{ relations: RelationAssertion[] }>("GET", `/v1/twins/${encodeURIComponent(twinId)}/relations`, { query });
     return body.relations;
   }

@@ -103,8 +103,8 @@ class Client:
         body = self._request("GET", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/assertions", query=query)
         return [StateAssertion(**item) for item in body.get("assertions", [])]
 
-    def list_relations(self, twin_id: str, predicate: Optional[str] = None, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None) -> list:
-        query = _query(predicate=predicate, as_of=to_iso(as_of), as_known=to_iso(as_known))
+    def list_relations(self, twin_id: str, predicate: Optional[str] = None, direction: Optional[str] = None, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None) -> list:
+        query = _query(predicate=predicate, direction=direction, as_of=to_iso(as_of), as_known=to_iso(as_known))
         body = self._request("GET", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/relations", query=query)
         return [RelationAssertion(**item) for item in body.get("relations", [])]
 

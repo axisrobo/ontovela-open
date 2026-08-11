@@ -187,6 +187,9 @@ paths:
       parameters:
         - $ref: '#/components/parameters/TwinID'
         - $ref: '#/components/parameters/Predicate'
+        - name: direction
+          in: query
+          schema: { type: string, enum: [outgoing, incoming] }
         - $ref: '#/components/parameters/AsOf'
         - $ref: '#/components/parameters/AsKnown'
       responses:

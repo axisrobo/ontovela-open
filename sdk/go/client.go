@@ -118,10 +118,13 @@ func (c *Client) ListAssertions(ctx context.Context, twinID, property string, te
 	return result.Assertions, nil
 }
 
-func (c *Client) ListRelations(ctx context.Context, twinID, predicate string, temporal TemporalQuery) ([]RelationAssertion, error) {
+func (c *Client) ListRelations(ctx context.Context, twinID, predicate, direction string, temporal TemporalQuery) ([]RelationAssertion, error) {
 	query := temporal.values()
 	if predicate != "" {
 		query.Set("predicate", predicate)
+	}
+	if direction != "" {
+		query.Set("direction", direction)
 	}
 	var result struct {
 		Relations []RelationAssertion `json:"relations"`
