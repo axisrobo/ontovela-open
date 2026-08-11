@@ -100,6 +100,32 @@ type ResolvedState struct {
 	ConflictingAssertionIDs []string        `json:"conflicting_assertion_ids,omitempty"`
 	Freshness               string          `json:"freshness"`
 	ResolutionPolicy        string          `json:"resolution_policy"`
+	EventTime               time.Time       `json:"event_time,omitempty"`
+}
+
+type RequiredState struct {
+	Property      string `json:"property"`
+	MaxAgeSeconds int    `json:"max_age_seconds"`
+}
+
+type RealityViewRequest struct {
+	TwinID        string          `json:"twin_id"`
+	Purpose       string          `json:"purpose"`
+	RequiredState []RequiredState `json:"required_state"`
+}
+
+type RealityViewItem struct {
+	Property   string        `json:"property"`
+	Acceptable bool          `json:"acceptable"`
+	State      ResolvedState `json:"state"`
+}
+
+type RealityView struct {
+	TenantID string            `json:"tenant_id"`
+	TwinID   string            `json:"twin_id"`
+	Purpose  string            `json:"purpose"`
+	Status   string            `json:"status"`
+	Items    []RealityViewItem `json:"items"`
 }
 
 type Snapshot struct {

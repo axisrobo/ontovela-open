@@ -52,6 +52,31 @@ func TestResolveStateSendsBitemporalQuery(t *testing.T) {
 	}
 }
 
+func TestCreateRealityViewPostsPurposeAndRequiredState(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var payload RealityViewRequest
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatal(err)
+		}
+		if r.URL.Path != "/v1/reality-views" || payload.Purpose != "dispatch" || len(payload.RequiredState) != 1 || payload.RequiredState[0].Property != "health" {
+			t.Fatalf("request path=%s payload=%#v", r.URL.Path, payload)
+		}
+		_ = json.NewEncoder(w).Encode(RealityView{Status: "ready", Items: []RealityViewItem{{Property: "health", Acceptable: true}}})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	view, err := client.CreateRealityView(context.Background(), RealityViewRequest{TwinID: "robot:wh-17", Purpose: "dispatch", RequiredState: []RequiredState{{Property: "health", MaxAgeSeconds: 60}}}, TemporalQuery{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if view.Status != "ready" || len(view.Items) != 1 || !view.Items[0].Acceptable {
+		t.Fatalf("view = %#v", view)
+	}
+}
+
 func TestListAssertionsAndAPIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
