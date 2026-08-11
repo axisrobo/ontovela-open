@@ -35,3 +35,4 @@ See `docs/repository-boundary.md`.
 - TypeScript SDK: `sdk/typescript/`
 - Harmovela evidence adapter: `adapters/harmovela/`
 - Prediction adapter: `adapters/prediction/`
+- HTTP/webhook adapter: `adapters/httpwebhook/`
