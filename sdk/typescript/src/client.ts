@@ -58,6 +58,10 @@ export class OntovelaClient {
     this.fetchFn = options.fetch ?? globalThis.fetch.bind(globalThis);
   }
 
+  async reportHeartbeat(source: string): Promise<import("./models").SourceHeartbeat> {
+    return this.request<import("./models").SourceHeartbeat>("POST", "/v1/heartbeats", { body: { source } });
+  }
+
   async listTwinTypes(): Promise<import("./models").TwinType[]> {
     const body = await this.request<{ twin_types: import("./models").TwinType[] }>("GET", "/v1/twin-types");
     return body.twin_types;

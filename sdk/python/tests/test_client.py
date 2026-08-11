@@ -82,6 +82,29 @@ class ClientTest(unittest.TestCase):
         state = client.resolve_state("twin-1", "health", as_of=when, as_known=when)
         self.assertEqual(state.status, "resolved")
 
+    def test_report_heartbeat_posts_source(self):
+        handler = _Handler
+        original_do_post = handler.do_POST
+
+        def patched(self):
+            if self.path == "/v1/heartbeats":
+                length = int(self.headers.get("Content-Length", "0"))
+                body = json.loads(self.rfile.read(length) or b"{}")
+                if body.get("source") != "sensor:health":
+                    self._json(400, {"error": "bad source"})
+                    return
+                self._json(200, {"tenant_id": "acme", "source": "sensor:health", "last_heartbeat_at": "2026-08-11T10:00:00Z"})
+                return
+            original_do_post(self)
+
+        handler.do_POST = patched
+        try:
+            client = Client(self.base_url, "acme")
+            heartbeat = client.report_heartbeat("sensor:health")
+            self.assertEqual(heartbeat.source, "sensor:health")
+        finally:
+            handler.do_POST = original_do_post
+
     def test_list_twin_types_parses_packs(self):
         handler = _Handler
         original_do_get = handler.do_GET

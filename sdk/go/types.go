@@ -178,6 +178,12 @@ type ConflictRecord struct {
 	UpdatedAt        time.Time `json:"updated_at,omitempty"`
 }
 
+type SourceHeartbeat struct {
+	TenantID        string    `json:"tenant_id"`
+	Source          string    `json:"source"`
+	LastHeartbeatAt time.Time `json:"last_heartbeat_at"`
+}
+
 type TwinType struct {
 	TypeRef     string   `json:"type_ref"`
 	Description string   `json:"description"`

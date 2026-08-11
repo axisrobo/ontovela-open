@@ -13,6 +13,7 @@ from .models import (
     ChangeEvent,
     ConflictRecord,
     ImpactPath,
+    SourceHeartbeat,
     TwinType,
     RealityView,
     RealityViewItem,
@@ -61,6 +62,9 @@ class Client:
     def list_twin_types(self) -> list:
         body = self._request("GET", "/v1/twin-types")
         return [TwinType(**item) for item in body.get("twin_types", [])]
+
+    def report_heartbeat(self, source: str) -> SourceHeartbeat:
+        return self._post("/v1/heartbeats", {"source": source}, SourceHeartbeat)
 
     def create_twin(self, twin_id: str, type_ref: str, lifecycle: Optional[str] = None) -> Twin:
         return self._post("/v1/twins", _prune({"id": twin_id, "type_ref": type_ref, "lifecycle": lifecycle}), Twin)

@@ -120,6 +120,29 @@ func TestListConflictsFiltersByStatus(t *testing.T) {
 	}
 }
 
+func TestReportHeartbeatPostsSource(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/heartbeats" {
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+		var payload struct{ Source string }
+		_ = json.NewDecoder(r.Body).Decode(&payload)
+		if payload.Source != "sensor:health" {
+			t.Fatalf("source = %q", payload.Source)
+		}
+		_ = json.NewEncoder(w).Encode(SourceHeartbeat{TenantID: "acme", Source: "sensor:health"})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	heartbeat, err := client.ReportHeartbeat(context.Background(), "sensor:health")
+	if err != nil || heartbeat.Source != "sensor:health" {
+		t.Fatalf("heartbeat=%#v err=%v", heartbeat, err)
+	}
+}
+
 func TestListTwinTypesParsesPacks(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/twin-types" {

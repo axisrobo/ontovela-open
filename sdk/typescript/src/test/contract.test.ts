@@ -42,6 +42,15 @@ before(async () => {
       sendJson(response, 200, { impact_paths: [{ subject_id: "twin-1", depth: 1, relation_id: "r1", predicate: "located_in", target_id: "zone-1", state_kind: "observed", source: "map", evidence_ref: "e1" }] });
       return;
     }
+    if (request.method === "POST" && request.url === "/v1/heartbeats") {
+      let body = "";
+      request.on("data", (chunk) => (body += chunk));
+      request.on("end", () => {
+        const parsed = JSON.parse(body) as { source: string };
+        sendJson(response, 200, { tenant_id: "acme", source: parsed.source, last_heartbeat_at: "2026-08-11T10:00:00Z" });
+      });
+      return;
+    }
     if (request.method === "GET" && request.url === "/v1/twin-types") {
       sendJson(response, 200, { twin_types: [{ type_ref: "robot", description: "Robot twin", properties: ["location"], relations: ["located_in"] }] });
       return;
@@ -80,6 +89,12 @@ test("APIError carries status and message", async () => {
     () => client.getTwin("missing"),
     (error: unknown) => error instanceof APIError && error.status === 404 && error.serverMessage === "not found",
   );
+});
+
+test("reportHeartbeat posts source", async () => {
+  const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
+  const heartbeat = await client.reportHeartbeat("sensor:health");
+  assert.equal(heartbeat.source, "sensor:health");
 });
 
 test("listTwinTypes parses packs", async () => {

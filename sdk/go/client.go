@@ -42,6 +42,13 @@ func (c *Client) ListTwinTypes(ctx context.Context) ([]TwinType, error) {
 	return result.TwinTypes, nil
 }
 
+func (c *Client) ReportHeartbeat(ctx context.Context, source string) (SourceHeartbeat, error) {
+	var result SourceHeartbeat
+	return result, c.doJSON(ctx, http.MethodPost, "/v1/heartbeats", nil, struct {
+		Source string `json:"source"`
+	}{Source: source}, "", &result)
+}
+
 func (c *Client) CreateTwin(ctx context.Context, input TwinInput) (Twin, error) {
 	var result Twin
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/twins", nil, input, "", &result)

@@ -184,6 +184,13 @@ class ConflictRecord:
 
 
 @dataclass
+class SourceHeartbeat:
+    tenant_id: str
+    source: str
+    last_heartbeat_at: Optional[str] = None
+
+
+@dataclass
 class TwinType:
     type_ref: str
     description: str

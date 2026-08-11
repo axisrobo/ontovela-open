@@ -152,6 +152,12 @@ export interface ConflictRecord {
   updated_at?: string;
 }
 
+export interface SourceHeartbeat {
+  tenant_id: string;
+  source: string;
+  last_heartbeat_at: string;
+}
+
 export interface TwinType {
   type_ref: string;
   description: string;
