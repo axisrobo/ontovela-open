@@ -163,7 +163,7 @@ paths:
   /v1/twins/{id}/causal:
     get:
       summary: Traverse causal lineage over causes relations
-      operationId: computeCausal
+      operationId: computeCausalLineage
       parameters:
         - $ref: '#/components/parameters/TwinID'
         - name: max_depth
@@ -215,7 +215,6 @@ paths:
       responses:
         '201': { description: Snapshot created, content: { application/json: { schema: { $ref: '#/components/schemas/Snapshot' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
-  /v1/twins/{id}/snapshots:
     get:
       summary: List a Twin's snapshots newest-first
       operationId: listSnapshots
@@ -307,7 +306,7 @@ components:
     SourceBindingInput:
       type: object
       required: [id, source, property, authority_rank, max_lag_seconds]
-      properties: { id: { type: string }, source: { type: string }, property: { type: string, description: Use relation:{predicate} for relation claims, or '*' for default scope }, authority_rank: { type: integer, minimum: 0 }, max_lag_seconds: { type: integer, minimum: 0 } }
+      properties: { id: { type: string }, source: { type: string }, property: { type: string, description: "Use relation:{predicate} for relation claims, or '*' for default scope" }, authority_rank: { type: integer, minimum: 0 }, max_lag_seconds: { type: integer, minimum: 0 } }
     SourceBinding:
       allOf: [ { $ref: '#/components/schemas/SourceBindingInput' }, { type: object, required: [tenant_id, created_at], properties: { tenant_id: { type: string }, created_at: { type: string, format: date-time } } } ]
     StateAssertionInput:
