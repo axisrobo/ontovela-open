@@ -86,6 +86,7 @@ export interface RealityViewRequest {
   twin_id: string;
   purpose: string;
   required_state: RequiredState[];
+  authorization_ref?: string;
 }
 
 export interface RealityViewItem {
@@ -98,6 +99,7 @@ export interface RealityView {
   tenant_id: string;
   twin_id: string;
   purpose: string;
+  authorization_ref?: string;
   status: "ready" | "stale" | "unknown" | "conflicted";
   items: RealityViewItem[];
 }

@@ -110,6 +110,7 @@ class RealityViewRequest:
     twin_id: str
     purpose: str
     required_state: list = field(default_factory=list)
+    authorization_ref: Optional[str] = None
 
 
 @dataclass
@@ -126,6 +127,7 @@ class RealityView:
     purpose: str
     status: str
     items: list = field(default_factory=list)
+    authorization_ref: Optional[str] = None
 
 
 @dataclass

@@ -109,9 +109,10 @@ type RequiredState struct {
 }
 
 type RealityViewRequest struct {
-	TwinID        string          `json:"twin_id"`
-	Purpose       string          `json:"purpose"`
-	RequiredState []RequiredState `json:"required_state"`
+	TwinID           string          `json:"twin_id"`
+	Purpose          string          `json:"purpose"`
+	RequiredState    []RequiredState `json:"required_state"`
+	AuthorizationRef string          `json:"authorization_ref,omitempty"`
 }
 
 type RealityViewItem struct {
@@ -121,11 +122,12 @@ type RealityViewItem struct {
 }
 
 type RealityView struct {
-	TenantID string            `json:"tenant_id"`
-	TwinID   string            `json:"twin_id"`
-	Purpose  string            `json:"purpose"`
-	Status   string            `json:"status"`
-	Items    []RealityViewItem `json:"items"`
+	TenantID         string            `json:"tenant_id"`
+	TwinID           string            `json:"twin_id"`
+	Purpose          string            `json:"purpose"`
+	AuthorizationRef string            `json:"authorization_ref,omitempty"`
+	Status           string            `json:"status"`
+	Items            []RealityViewItem `json:"items"`
 }
 
 type Snapshot struct {

@@ -199,7 +199,7 @@ class Client:
         for item in raw.get("items", []):
             state = ResolvedState(**item["state"]) if item.get("state") else None
             items.append(RealityViewItem(property=item["property"], acceptable=item["acceptable"], state=state))
-        return RealityView(tenant_id=raw.get("tenant_id", ""), twin_id=raw.get("twin_id", ""), purpose=raw.get("purpose", ""), status=raw.get("status", ""), items=items)
+        return RealityView(tenant_id=raw.get("tenant_id", ""), twin_id=raw.get("twin_id", ""), purpose=raw.get("purpose", ""), status=raw.get("status", ""), items=items, authorization_ref=raw.get("authorization_ref"))
 
     def _post(self, path: str, body: dict, model: type, idempotency_key: str = "") -> Any:
         return self._request("POST", path, body=body, model=model, idempotency_key=idempotency_key)

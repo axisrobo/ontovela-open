@@ -379,7 +379,7 @@ components:
     RealityViewRequest:
       type: object
       required: [twin_id, purpose, required_state]
-      properties: { twin_id: { type: string }, purpose: { type: string, minLength: 1 }, required_state: { type: array, minItems: 1, items: { $ref: '#/components/schemas/RequiredState' } } }
+      properties: { twin_id: { type: string }, purpose: { type: string, minLength: 1 }, required_state: { type: array, minItems: 1, items: { $ref: '#/components/schemas/RequiredState' } }, authorization_ref: { type: string } }
     RealityViewItem:
       type: object
       required: [property, acceptable, state]
@@ -387,7 +387,7 @@ components:
     RealityView:
       type: object
       required: [tenant_id, twin_id, purpose, status, items]
-      properties: { tenant_id: { type: string }, twin_id: { type: string }, purpose: { type: string }, status: { type: string, enum: [ready, stale, unknown, conflicted] }, items: { type: array, items: { $ref: '#/components/schemas/RealityViewItem' } } }
+      properties: { tenant_id: { type: string }, twin_id: { type: string }, purpose: { type: string }, authorization_ref: { type: string }, status: { type: string, enum: [ready, stale, unknown, conflicted] }, items: { type: array, items: { $ref: '#/components/schemas/RealityViewItem' } } }
     Snapshot:
       type: object
       required: [id, tenant_id, subject_id, resolution_policy, digest, states, relations, created_at]
