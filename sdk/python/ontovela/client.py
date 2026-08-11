@@ -130,8 +130,8 @@ class Client:
             model=SnapshotDiff,
         )
 
-    def list_changes(self, after: int = 0, limit: int = 100) -> list:
-        body = self._request("GET", "/v1/changes", query=_query(after=after, limit=limit))
+    def list_changes(self, after: int = 0, limit: int = 100, kind: Optional[str] = None, subject_id: Optional[str] = None, property: Optional[str] = None) -> list:
+        body = self._request("GET", "/v1/changes", query=_query(after=after, limit=limit, kind=kind, subject_id=subject_id, property=property))
         return [ChangeEvent(**item) for item in body.get("events", [])]
 
     def get_subscription_offset(self, consumer_id: str) -> SubscriptionOffset:

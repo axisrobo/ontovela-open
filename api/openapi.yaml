@@ -264,6 +264,15 @@ paths:
         - name: limit
           in: query
           schema: { type: integer, minimum: 0, maximum: 500, default: 100 }
+        - name: kind
+          in: query
+          schema: { type: string }
+        - name: subject_id
+          in: query
+          schema: { type: string }
+        - name: property
+          in: query
+          schema: { type: string }
       responses:
         '200': { description: Events after the supplied offset, content: { application/json: { schema: { type: object, required: [events], properties: { events: { type: array, items: { $ref: '#/components/schemas/ChangeEvent' } } } } } } }
 components:

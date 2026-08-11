@@ -204,8 +204,17 @@ func (c *Client) CreateRealityView(ctx context.Context, input RealityViewRequest
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/reality-views", temporal.values(), input, "", &result)
 }
 
-func (c *Client) ListChanges(ctx context.Context, after int64, limit int) ([]ChangeEvent, error) {
+func (c *Client) ListChanges(ctx context.Context, after int64, limit int, filters ChangeFilter) ([]ChangeEvent, error) {
 	query := url.Values{"after": []string{strconv.FormatInt(after, 10)}, "limit": []string{strconv.Itoa(limit)}}
+	if filters.Kind != "" {
+		query.Set("kind", filters.Kind)
+	}
+	if filters.SubjectID != "" {
+		query.Set("subject_id", filters.SubjectID)
+	}
+	if filters.Property != "" {
+		query.Set("property", filters.Property)
+	}
 	var result struct {
 		Events []ChangeEvent `json:"events"`
 	}

@@ -151,6 +151,12 @@ type SnapshotDiff struct {
 	RemovedRelationIDs []string `json:"removed_relation_ids"`
 }
 
+type ChangeFilter struct {
+	Kind      string
+	SubjectID string
+	Property  string
+}
+
 type ChangeEvent struct {
 	Offset     int64           `json:"offset"`
 	TenantID   string          `json:"tenant_id"`

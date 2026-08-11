@@ -153,8 +153,12 @@ export class OntovelaClient {
     );
   }
 
-  async listChanges(after = 0, limit = 100): Promise<ChangeEvent[]> {
-    const body = await this.request<{ events: ChangeEvent[] }>("GET", "/v1/changes", { query: { after: String(after), limit: String(limit) } });
+  async listChanges(after = 0, limit = 100, filters: { kind?: string; subjectId?: string; property?: string } = {}): Promise<ChangeEvent[]> {
+    const query: Record<string, string> = { after: String(after), limit: String(limit) };
+    if (filters.kind !== undefined) query.kind = filters.kind;
+    if (filters.subjectId !== undefined) query.subject_id = filters.subjectId;
+    if (filters.property !== undefined) query.property = filters.property;
+    const body = await this.request<{ events: ChangeEvent[] }>("GET", "/v1/changes", { query });
     return body.events;
   }
 
