@@ -39,3 +39,4 @@ See `docs/repository-boundary.md`.
 - Stream ingest adapter (Kafka/NATS): `adapters/stream/`
 - SQL/REST polling adapter: `adapters/sqlrest/`
 - Edge spool adapter: `adapters/edge/`
+- Quickstart: `docs/quickstart.md`
