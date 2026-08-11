@@ -32,3 +32,4 @@ See `docs/repository-boundary.md`.
 - Compatibility policy: `docs/compatibility.md`
 - Go SDK: `sdk/go/`
 - Python SDK: `sdk/python/`
+- TypeScript SDK: `sdk/typescript/`
