@@ -1,5 +1,7 @@
 # ONTOVELA Open
 
+English | [简体中文](README.zh-CN.md)
+
 Apache-2.0 licensed public developer surface for [ONTOVELA](https://github.com/axisrobo/ONTOVELA), the Digital Enterprise Twin and Operational World Model Platform.
 
 This repository is the public adoption path: stable API contracts, Go/Python/TypeScript SDKs, examples, reference adapters, local developer binaries, documentation, and interoperability test fixtures.
