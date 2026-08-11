@@ -37,3 +37,4 @@ See `docs/repository-boundary.md`.
 - Prediction adapter: `adapters/prediction/`
 - HTTP/webhook adapter: `adapters/httpwebhook/`
 - Stream ingest adapter (Kafka/NATS): `adapters/stream/`
+- SQL/REST polling adapter: `adapters/sqlrest/`
