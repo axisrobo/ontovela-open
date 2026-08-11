@@ -42,6 +42,10 @@ before(async () => {
       sendJson(response, 200, { impact_paths: [{ subject_id: "twin-1", depth: 1, relation_id: "r1", predicate: "located_in", target_id: "zone-1", state_kind: "observed", source: "map", evidence_ref: "e1" }] });
       return;
     }
+    if (request.method === "GET" && request.url?.startsWith("/v1/twins/twin-1/causal")) {
+      sendJson(response, 200, { causal_links: [{ subject_id: "twin-1", depth: 1, relation_id: "r1", mechanism: "motor_failure", target_id: "bin-1", event_time: "2026-08-11T10:00:00Z", source: "map", evidence_ref: "e1" }] });
+      return;
+    }
     if (request.method === "GET" && request.url?.startsWith("/v1/twins/twin-1/snapshots")) {
       sendJson(response, 200, { snapshots: [{ id: "s1", tenant_id: "acme", subject_id: "twin-1", resolution_policy: "p", digest: "d", states: [], relations: [], created_at: "2026-08-11T00:00:00Z" }] });
       return;
@@ -93,6 +97,13 @@ test("APIError carries status and message", async () => {
     () => client.getTwin("missing"),
     (error: unknown) => error instanceof APIError && error.status === 404 && error.serverMessage === "not found",
   );
+});
+
+test("computeCausalLineage parses links", async () => {
+  const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
+  const links = await client.computeCausalLineage("twin-1", 5);
+  assert.equal(links.length, 1);
+  assert.equal(links[0].mechanism, "motor_failure");
 });
 
 test("listSnapshots parses list", async () => {

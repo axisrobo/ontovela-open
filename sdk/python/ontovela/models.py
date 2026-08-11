@@ -199,6 +199,18 @@ class TwinType:
 
 
 @dataclass
+class CausalLink:
+    subject_id: str
+    depth: int
+    relation_id: str
+    target_id: str
+    event_time: Optional[str] = None
+    mechanism: Optional[str] = None
+    source: Optional[str] = None
+    evidence_ref: Optional[str] = None
+
+
+@dataclass
 class ImpactPath:
     subject_id: str
     depth: int

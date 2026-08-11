@@ -2,6 +2,7 @@
 
 from .client import APIError, Client
 from .models import (
+    CausalLink,
     ChangeEvent,
     ConflictRecord,
     ImpactPath,
@@ -24,6 +25,7 @@ from .models import (
 __all__ = [
     "APIError",
     "Client",
+    "CausalLink",
     "ChangeEvent",
     "ConflictRecord",
     "ImpactPath",

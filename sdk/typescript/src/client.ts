@@ -107,6 +107,13 @@ export class OntovelaClient {
     );
   }
 
+  async computeCausalLineage(twinId: string, maxDepth = 5, temporal?: TemporalQuery): Promise<import("./models").CausalLink[]> {
+    const query: Record<string, string> = { max_depth: String(maxDepth) };
+    Object.assign(query, this.temporalQuery({}, temporal));
+    const body = await this.request<{ causal_links: import("./models").CausalLink[] }>("GET", `/v1/twins/${encodeURIComponent(twinId)}/causal`, { query });
+    return body.causal_links;
+  }
+
   async computeImpact(twinId: string, options: { maxDepth?: number; predicate?: string; temporal?: TemporalQuery } = {}): Promise<import("./models").ImpactPath[]> {
     const query: Record<string, string> = { max_depth: String(options.maxDepth ?? 5) };
     if (options.predicate !== undefined) {

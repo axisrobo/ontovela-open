@@ -120,6 +120,24 @@ func TestListConflictsFiltersByStatus(t *testing.T) {
 	}
 }
 
+func TestComputeCausalLineageParsesLinks(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/twins/robot:wh-17/causal" || r.URL.Query().Get("max_depth") != "5" {
+			t.Fatalf("path=%s query=%s", r.URL.Path, r.URL.RawQuery)
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"causal_links": []CausalLink{{SubjectID: "robot:wh-17", TargetID: "bin:A-01", Mechanism: "motor_failure", Depth: 1}}})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	links, err := client.ComputeCausalLineage(context.Background(), "robot:wh-17", 5, TemporalQuery{})
+	if err != nil || len(links) != 1 || links[0].Mechanism != "motor_failure" {
+		t.Fatalf("links=%#v err=%v", links, err)
+	}
+}
+
 func TestListSnapshotsParsesOrderedList(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/twins/robot:wh-17/snapshots" || r.URL.Query().Get("limit") != "10" {

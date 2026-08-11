@@ -172,6 +172,18 @@ func (c *Client) CommitSubscriptionOffset(ctx context.Context, consumerID string
 	}{Offset: offset}, "", &result)
 }
 
+func (c *Client) ComputeCausalLineage(ctx context.Context, twinID string, maxDepth int, temporal TemporalQuery) ([]CausalLink, error) {
+	query := temporal.values()
+	query.Set("max_depth", strconv.Itoa(maxDepth))
+	var result struct {
+		CausalLinks []CausalLink `json:"causal_links"`
+	}
+	if err := c.doJSON(ctx, http.MethodGet, path.Join("/v1/twins", twinID, "causal"), query, nil, "", &result); err != nil {
+		return nil, err
+	}
+	return result.CausalLinks, nil
+}
+
 func (c *Client) ComputeImpact(ctx context.Context, twinID string, maxDepth int, predicate string, temporal TemporalQuery) ([]ImpactPath, error) {
 	query := temporal.values()
 	query.Set("max_depth", strconv.Itoa(maxDepth))

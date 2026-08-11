@@ -165,6 +165,17 @@ export interface TwinType {
   relations: string[];
 }
 
+export interface CausalLink {
+  subject_id: string;
+  depth: number;
+  relation_id: string;
+  mechanism?: string;
+  target_id: string;
+  event_time: string;
+  source: string;
+  evidence_ref: string;
+}
+
 export interface ImpactPath {
   subject_id: string;
   depth: number;

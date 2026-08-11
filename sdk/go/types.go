@@ -191,6 +191,17 @@ type TwinType struct {
 	Relations   []string `json:"relations"`
 }
 
+type CausalLink struct {
+	SubjectID   string    `json:"subject_id"`
+	Depth       int       `json:"depth"`
+	RelationID  string    `json:"relation_id"`
+	Mechanism   string    `json:"mechanism,omitempty"`
+	TargetID    string    `json:"target_id"`
+	EventTime   time.Time `json:"event_time"`
+	Source      string    `json:"source"`
+	EvidenceRef string    `json:"evidence_ref"`
+}
+
 type ImpactPath struct {
 	SubjectID   string    `json:"subject_id"`
 	Depth       int       `json:"depth"`

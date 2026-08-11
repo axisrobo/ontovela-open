@@ -82,6 +82,25 @@ class ClientTest(unittest.TestCase):
         state = client.resolve_state("twin-1", "health", as_of=when, as_known=when)
         self.assertEqual(state.status, "resolved")
 
+    def test_compute_causal_lineage_parses_links(self):
+        handler = _Handler
+        original_do_get = handler.do_GET
+
+        def patched(self):
+            if self.path.startswith("/v1/twins/twin-1/causal"):
+                self._json(200, {"causal_links": [{"subject_id": "twin-1", "depth": 1, "relation_id": "r1", "mechanism": "motor_failure", "target_id": "bin-1", "event_time": "2026-08-11T10:00:00Z", "source": "map", "evidence_ref": "e1"}]})
+                return
+            original_do_get(self)
+
+        handler.do_GET = patched
+        try:
+            client = Client(self.base_url, "acme")
+            links = client.compute_causal_lineage("twin-1", max_depth=5)
+            self.assertEqual(len(links), 1)
+            self.assertEqual(links[0].mechanism, "motor_failure")
+        finally:
+            handler.do_GET = original_do_get
+
     def test_list_snapshots_parses_list(self):
         handler = _Handler
         original_do_get = handler.do_GET
