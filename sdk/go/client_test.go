@@ -120,6 +120,24 @@ func TestListConflictsFiltersByStatus(t *testing.T) {
 	}
 }
 
+func TestListTwinTypesParsesPacks(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/twin-types" {
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"twin_types": []TwinType{{TypeRef: "robot", Description: "Robot twin", Properties: []string{"location"}}}})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	types, err := client.ListTwinTypes(context.Background())
+	if err != nil || len(types) != 1 || types[0].TypeRef != "robot" {
+		t.Fatalf("types=%#v err=%v", types, err)
+	}
+}
+
 func TestComputeImpactSendsDepthAndParsesPaths(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/twins/robot:wh-17/impact" || r.URL.Query().Get("max_depth") != "3" {

@@ -42,6 +42,10 @@ before(async () => {
       sendJson(response, 200, { impact_paths: [{ subject_id: "twin-1", depth: 1, relation_id: "r1", predicate: "located_in", target_id: "zone-1", state_kind: "observed", source: "map", evidence_ref: "e1" }] });
       return;
     }
+    if (request.method === "GET" && request.url === "/v1/twin-types") {
+      sendJson(response, 200, { twin_types: [{ type_ref: "robot", description: "Robot twin", properties: ["location"], relations: ["located_in"] }] });
+      return;
+    }
     if (request.method === "GET" && request.url === "/v1/twins/missing") {
       sendJson(response, 404, { error: "not found" });
       return;
@@ -76,6 +80,13 @@ test("APIError carries status and message", async () => {
     () => client.getTwin("missing"),
     (error: unknown) => error instanceof APIError && error.status === 404 && error.serverMessage === "not found",
   );
+});
+
+test("listTwinTypes parses packs", async () => {
+  const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
+  const types = await client.listTwinTypes();
+  assert.equal(types.length, 1);
+  assert.equal(types[0].type_ref, "robot");
 });
 
 test("computeImpact parses impact paths", async () => {

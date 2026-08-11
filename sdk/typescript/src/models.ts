@@ -152,6 +152,13 @@ export interface ConflictRecord {
   updated_at?: string;
 }
 
+export interface TwinType {
+  type_ref: string;
+  description: string;
+  properties: string[];
+  relations: string[];
+}
+
 export interface ImpactPath {
   subject_id: string;
   depth: number;

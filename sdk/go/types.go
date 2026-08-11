@@ -178,6 +178,13 @@ type ConflictRecord struct {
 	UpdatedAt        time.Time `json:"updated_at,omitempty"`
 }
 
+type TwinType struct {
+	TypeRef     string   `json:"type_ref"`
+	Description string   `json:"description"`
+	Properties  []string `json:"properties"`
+	Relations   []string `json:"relations"`
+}
+
 type ImpactPath struct {
 	SubjectID   string    `json:"subject_id"`
 	Depth       int       `json:"depth"`

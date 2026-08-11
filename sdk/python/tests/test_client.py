@@ -82,6 +82,25 @@ class ClientTest(unittest.TestCase):
         state = client.resolve_state("twin-1", "health", as_of=when, as_known=when)
         self.assertEqual(state.status, "resolved")
 
+    def test_list_twin_types_parses_packs(self):
+        handler = _Handler
+        original_do_get = handler.do_GET
+
+        def patched(self):
+            if self.path == "/v1/twin-types":
+                self._json(200, {"twin_types": [{"type_ref": "robot", "description": "Robot twin", "properties": ["location"], "relations": ["located_in"]}]})
+                return
+            original_do_get(self)
+
+        handler.do_GET = patched
+        try:
+            client = Client(self.base_url, "acme")
+            types = client.list_twin_types()
+            self.assertEqual(len(types), 1)
+            self.assertEqual(types[0].type_ref, "robot")
+        finally:
+            handler.do_GET = original_do_get
+
     def test_compute_impact_sends_depth_and_parses_paths(self):
         handler = _Handler
         original_do_get = handler.do_GET

@@ -32,6 +32,16 @@ func NewClient(baseURL, tenantID string) (*Client, error) {
 	return &Client{BaseURL: parsed, TenantID: tenantID, HTTPClient: http.DefaultClient}, nil
 }
 
+func (c *Client) ListTwinTypes(ctx context.Context) ([]TwinType, error) {
+	var result struct {
+		TwinTypes []TwinType `json:"twin_types"`
+	}
+	if err := c.doJSON(ctx, http.MethodGet, "/v1/twin-types", nil, nil, "", &result); err != nil {
+		return nil, err
+	}
+	return result.TwinTypes, nil
+}
+
 func (c *Client) CreateTwin(ctx context.Context, input TwinInput) (Twin, error) {
 	var result Twin
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/twins", nil, input, "", &result)

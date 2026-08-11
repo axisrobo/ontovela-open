@@ -184,6 +184,14 @@ class ConflictRecord:
 
 
 @dataclass
+class TwinType:
+    type_ref: str
+    description: str
+    properties: list = field(default_factory=list)
+    relations: list = field(default_factory=list)
+
+
+@dataclass
 class ImpactPath:
     subject_id: str
     depth: int

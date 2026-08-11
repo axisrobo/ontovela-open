@@ -58,6 +58,11 @@ export class OntovelaClient {
     this.fetchFn = options.fetch ?? globalThis.fetch.bind(globalThis);
   }
 
+  async listTwinTypes(): Promise<import("./models").TwinType[]> {
+    const body = await this.request<{ twin_types: import("./models").TwinType[] }>("GET", "/v1/twin-types");
+    return body.twin_types;
+  }
+
   async createTwin(input: TwinInput): Promise<Twin> {
     return this.request<Twin>("POST", "/v1/twins", { body: input });
   }

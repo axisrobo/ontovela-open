@@ -13,6 +13,7 @@ from .models import (
     ChangeEvent,
     ConflictRecord,
     ImpactPath,
+    TwinType,
     RealityView,
     RealityViewItem,
     RealityViewRequest,
@@ -56,6 +57,10 @@ class Client:
         self.base_url = base_url.rstrip("/")
         self.tenant_id = tenant_id
         self.timeout = timeout
+
+    def list_twin_types(self) -> list:
+        body = self._request("GET", "/v1/twin-types")
+        return [TwinType(**item) for item in body.get("twin_types", [])]
 
     def create_twin(self, twin_id: str, type_ref: str, lifecycle: Optional[str] = None) -> Twin:
         return self._post("/v1/twins", _prune({"id": twin_id, "type_ref": type_ref, "lifecycle": lifecycle}), Twin)
