@@ -120,6 +120,24 @@ func TestListConflictsFiltersByStatus(t *testing.T) {
 	}
 }
 
+func TestComputeImpactSendsDepthAndParsesPaths(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/twins/robot:wh-17/impact" || r.URL.Query().Get("max_depth") != "3" {
+			t.Fatalf("path=%s query=%s", r.URL.Path, r.URL.RawQuery)
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"impact_paths": []ImpactPath{{SubjectID: "robot:wh-17", TargetID: "zone:charging", Predicate: "located_in", Depth: 1}}})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	paths, err := client.ComputeImpact(context.Background(), "robot:wh-17", 3, "located_in", TemporalQuery{})
+	if err != nil || len(paths) != 1 || paths[0].TargetID != "zone:charging" {
+		t.Fatalf("paths=%#v err=%v", paths, err)
+	}
+}
+
 func TestListAssertionsAndAPIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {

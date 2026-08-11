@@ -4,6 +4,7 @@ from .client import APIError, Client
 from .models import (
     ChangeEvent,
     ConflictRecord,
+    ImpactPath,
     RealityView,
     RealityViewItem,
     RealityViewRequest,
@@ -23,6 +24,7 @@ __all__ = [
     "Client",
     "ChangeEvent",
     "ConflictRecord",
+    "ImpactPath",
     "RealityView",
     "RealityViewItem",
     "RealityViewRequest",

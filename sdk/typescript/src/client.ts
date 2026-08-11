@@ -98,6 +98,16 @@ export class OntovelaClient {
     );
   }
 
+  async computeImpact(twinId: string, options: { maxDepth?: number; predicate?: string; temporal?: TemporalQuery } = {}): Promise<import("./models").ImpactPath[]> {
+    const query: Record<string, string> = { max_depth: String(options.maxDepth ?? 5) };
+    if (options.predicate !== undefined) {
+      query.predicate = options.predicate;
+    }
+    Object.assign(query, this.temporalQuery({}, options.temporal));
+    const body = await this.request<{ impact_paths: import("./models").ImpactPath[] }>("GET", `/v1/twins/${encodeURIComponent(twinId)}/impact`, { query });
+    return body.impact_paths;
+  }
+
   async createRealityView(input: RealityViewRequest, temporal?: TemporalQuery): Promise<RealityView> {
     return this.request<RealityView>("POST", "/v1/reality-views", { body: input, query: this.temporalQuery({}, temporal) });
   }

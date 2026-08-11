@@ -151,3 +151,14 @@ export interface ConflictRecord {
   resolution_policy: string;
   updated_at?: string;
 }
+
+export interface ImpactPath {
+  subject_id: string;
+  depth: number;
+  relation_id: string;
+  predicate: string;
+  target_id: string;
+  state_kind: StateKind;
+  source: string;
+  evidence_ref: string;
+}

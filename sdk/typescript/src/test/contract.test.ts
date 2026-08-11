@@ -38,6 +38,10 @@ before(async () => {
       sendJson(response, 200, { tenant_id: "acme", subject_id: "twin-1", property: "health", status: "resolved", freshness: "fresh", resolution_policy: "p", value: "ready" });
       return;
     }
+    if (request.method === "GET" && request.url?.startsWith("/v1/twins/twin-1/impact")) {
+      sendJson(response, 200, { impact_paths: [{ subject_id: "twin-1", depth: 1, relation_id: "r1", predicate: "located_in", target_id: "zone-1", state_kind: "observed", source: "map", evidence_ref: "e1" }] });
+      return;
+    }
     if (request.method === "GET" && request.url === "/v1/twins/missing") {
       sendJson(response, 404, { error: "not found" });
       return;
@@ -72,6 +76,13 @@ test("APIError carries status and message", async () => {
     () => client.getTwin("missing"),
     (error: unknown) => error instanceof APIError && error.status === 404 && error.serverMessage === "not found",
   );
+});
+
+test("computeImpact parses impact paths", async () => {
+  const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
+  const paths = await client.computeImpact("twin-1", { maxDepth: 3, predicate: "located_in" });
+  assert.equal(paths.length, 1);
+  assert.equal(paths[0].target_id, "zone-1");
 });
 
 test("tenantId is required", () => {

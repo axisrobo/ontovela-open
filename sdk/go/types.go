@@ -177,3 +177,14 @@ type ConflictRecord struct {
 	ResolutionPolicy string    `json:"resolution_policy"`
 	UpdatedAt        time.Time `json:"updated_at,omitempty"`
 }
+
+type ImpactPath struct {
+	SubjectID   string    `json:"subject_id"`
+	Depth       int       `json:"depth"`
+	RelationID  string    `json:"relation_id"`
+	Predicate   string    `json:"predicate"`
+	TargetID    string    `json:"target_id"`
+	StateKind   StateKind `json:"state_kind"`
+	Source      string    `json:"source"`
+	EvidenceRef string    `json:"evidence_ref"`
+}

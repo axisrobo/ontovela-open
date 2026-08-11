@@ -12,6 +12,7 @@ from typing import Any, Optional
 from .models import (
     ChangeEvent,
     ConflictRecord,
+    ImpactPath,
     RealityView,
     RealityViewItem,
     RealityViewRequest,
@@ -124,6 +125,11 @@ class Client:
 
     def commit_subscription_offset(self, consumer_id: str, offset: int) -> SubscriptionOffset:
         return self._post(f"/v1/subscriptions/{urllib.parse.quote(consumer_id, safe='')}/commit", {"offset": offset}, SubscriptionOffset)
+
+    def compute_impact(self, twin_id: str, max_depth: int = 5, predicate: Optional[str] = None, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None) -> list:
+        query = _query(max_depth=max_depth, predicate=predicate, as_of=to_iso(as_of), as_known=to_iso(as_known))
+        body = self._request("GET", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/impact", query=query)
+        return [ImpactPath(**item) for item in body.get("impact_paths", [])]
 
     def list_conflicts(self, status: Optional[str] = None, limit: int = 100) -> list:
         body = self._request("GET", "/v1/conflicts", query=_query(status=status, limit=limit))

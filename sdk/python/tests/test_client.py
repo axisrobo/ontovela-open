@@ -82,6 +82,25 @@ class ClientTest(unittest.TestCase):
         state = client.resolve_state("twin-1", "health", as_of=when, as_known=when)
         self.assertEqual(state.status, "resolved")
 
+    def test_compute_impact_sends_depth_and_parses_paths(self):
+        handler = _Handler
+        original_do_get = handler.do_GET
+
+        def patched(self):
+            if self.path.startswith("/v1/twins/twin-1/impact"):
+                self._json(200, {"impact_paths": [{"subject_id": "twin-1", "depth": 1, "relation_id": "r1", "predicate": "located_in", "target_id": "zone-1", "state_kind": "observed", "source": "map", "evidence_ref": "e1"}]})
+                return
+            original_do_get(self)
+
+        handler.do_GET = patched
+        try:
+            client = Client(self.base_url, "acme")
+            paths = client.compute_impact("twin-1", max_depth=3, predicate="located_in")
+            self.assertEqual(len(paths), 1)
+            self.assertEqual(paths[0].target_id, "zone-1")
+        finally:
+            handler.do_GET = original_do_get
+
     def test_api_error_carries_status_and_message(self):
         client = Client(self.base_url, "acme")
         with self.assertRaises(APIError) as caught:

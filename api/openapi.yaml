@@ -142,6 +142,22 @@ paths:
       responses:
         '200': { description: Current conflict records, content: { application/json: { schema: { type: object, required: [conflicts], properties: { conflicts: { type: array, items: { $ref: '#/components/schemas/ConflictRecord' } } } } } } }
         '400': { $ref: '#/components/responses/BadRequest' }
+  /v1/twins/{id}/impact:
+    get:
+      summary: Compute twin impact paths over temporal relations
+      operationId: computeImpact
+      parameters:
+        - $ref: '#/components/parameters/TwinID'
+        - name: max_depth
+          in: query
+          schema: { type: integer, minimum: 0, maximum: 20, default: 5 }
+        - name: predicate
+          in: query
+          schema: { type: string }
+        - $ref: '#/components/parameters/AsOf'
+        - $ref: '#/components/parameters/AsKnown'
+      responses:
+        '200': { description: Impact paths, content: { application/json: { schema: { type: object, required: [impact_paths], properties: { impact_paths: { type: array, items: { $ref: '#/components/schemas/ImpactPath' } } } } } } }
   /v1/reality-views:
     post:
       summary: Resolve a purpose-bound, freshness-aware operational view
@@ -296,4 +312,8 @@ components:
       type: object
       required: [tenant_id, subject_id, property, status, assertion_ids, resolution_policy]
       properties: { tenant_id: { type: string }, subject_id: { type: string }, property: { type: string }, status: { type: string, enum: [open, resolved] }, assertion_ids: { type: array, items: { type: string } }, resolution_policy: { type: string }, updated_at: { type: string, format: date-time } }
+    ImpactPath:
+      type: object
+      required: [subject_id, depth, relation_id, predicate, target_id, state_kind, source, evidence_ref]
+      properties: { subject_id: { type: string }, depth: { type: integer, minimum: 1 }, relation_id: { type: string }, predicate: { type: string }, target_id: { type: string }, state_kind: { $ref: '#/components/schemas/StateKind' }, source: { type: string }, evidence_ref: { type: string } }
     Error: { type: object, required: [error], properties: { error: { type: string } } }

@@ -183,5 +183,17 @@ class ConflictRecord:
     updated_at: Optional[str] = None
 
 
+@dataclass
+class ImpactPath:
+    subject_id: str
+    depth: int
+    relation_id: str
+    predicate: str
+    target_id: str
+    state_kind: str
+    source: str
+    evidence_ref: str
+
+
 def to_dict(dataclass_instance: Any) -> dict:
     return asdict(dataclass_instance)

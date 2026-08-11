@@ -143,6 +143,21 @@ func (c *Client) CommitSubscriptionOffset(ctx context.Context, consumerID string
 	}{Offset: offset}, "", &result)
 }
 
+func (c *Client) ComputeImpact(ctx context.Context, twinID string, maxDepth int, predicate string, temporal TemporalQuery) ([]ImpactPath, error) {
+	query := temporal.values()
+	query.Set("max_depth", strconv.Itoa(maxDepth))
+	if predicate != "" {
+		query.Set("predicate", predicate)
+	}
+	var result struct {
+		ImpactPaths []ImpactPath `json:"impact_paths"`
+	}
+	if err := c.doJSON(ctx, http.MethodGet, path.Join("/v1/twins", twinID, "impact"), query, nil, "", &result); err != nil {
+		return nil, err
+	}
+	return result.ImpactPaths, nil
+}
+
 func (c *Client) CreateRealityView(ctx context.Context, input RealityViewRequest, temporal TemporalQuery) (RealityView, error) {
 	var result RealityView
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/reality-views", temporal.values(), input, "", &result)
