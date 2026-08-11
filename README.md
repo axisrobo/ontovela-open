@@ -39,5 +39,9 @@ See `docs/repository-boundary.md`.
 - Stream ingest adapter (Kafka/NATS): `adapters/stream/`
 - SQL/REST polling adapter: `adapters/sqlrest/`
 - Edge spool adapter: `adapters/edge/`
+- Executor effect adapter: `adapters/effect/`
+- MQTT adapter: `adapters/mqtt/`
+- ROS 2 adapter: `adapters/ros2/`
+- OPC UA adapter: `adapters/opcua/`
 - Quickstart: `docs/quickstart.md`
 - Reference scenarios: `examples/warehouse-robot.md`, `examples/incident-response.md`, `examples/supply-chain-counterfactual.md`
