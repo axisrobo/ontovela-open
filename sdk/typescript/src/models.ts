@@ -88,6 +88,7 @@ export interface RealityViewRequest {
   purpose: string;
   required_state: RequiredState[];
   authorization_ref?: string;
+  exclude_state_kinds?: StateKind[];
 }
 
 export interface RealityViewItem {
@@ -126,6 +127,7 @@ export interface SnapshotDiff {
   changed_properties: string[];
   added_relation_ids: string[];
   removed_relation_ids: string[];
+  policy_changed: boolean;
 }
 
 export interface ChangeEvent {

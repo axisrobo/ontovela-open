@@ -110,10 +110,11 @@ type RequiredState struct {
 }
 
 type RealityViewRequest struct {
-	TwinID           string          `json:"twin_id"`
-	Purpose          string          `json:"purpose"`
-	RequiredState    []RequiredState `json:"required_state"`
-	AuthorizationRef string          `json:"authorization_ref,omitempty"`
+	TwinID            string          `json:"twin_id"`
+	Purpose           string          `json:"purpose"`
+	RequiredState     []RequiredState `json:"required_state"`
+	AuthorizationRef  string          `json:"authorization_ref,omitempty"`
+	ExcludeStateKinds []StateKind     `json:"exclude_state_kinds,omitempty"`
 }
 
 type RealityViewItem struct {
@@ -152,6 +153,7 @@ type SnapshotDiff struct {
 	ChangedProperties  []string `json:"changed_properties"`
 	AddedRelationIDs   []string `json:"added_relation_ids"`
 	RemovedRelationIDs []string `json:"removed_relation_ids"`
+	PolicyChanged      bool     `json:"policy_changed"`
 }
 
 type ChangeFilter struct {
