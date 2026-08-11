@@ -18,6 +18,37 @@ paths:
       operationId: listTwinTypes
       responses:
         '200': { description: Registered twin packs, content: { application/json: { schema: { type: object, required: [twin_types], properties: { twin_types: { type: array, items: { $ref: '#/components/schemas/TwinType' } } } } } } }
+  /v1/subscriptions/definitions:
+    post:
+      summary: Create a subscription definition
+      operationId: createSubscriptionDefinition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [subscription_id, filters], properties: { subscription_id: { type: string }, filters: { type: object, properties: { kind: { type: string }, subject_id: { type: string }, property: { type: string } } } } }
+      responses:
+        '201': { description: Created definition, content: { application/json: { schema: { $ref: '#/components/schemas/SubscriptionDefinition' } } } }
+    get:
+      summary: List subscription definitions
+      operationId: listSubscriptionDefinitions
+      responses:
+        '200': { description: Definitions, content: { application/json: { schema: { type: object, required: [subscription_definitions], properties: { subscription_definitions: { type: array, items: { $ref: '#/components/schemas/SubscriptionDefinition' } } } } } } }
+  /v1/subscriptions/definitions/{id}:
+    get:
+      summary: Get a subscription definition
+      operationId: getSubscriptionDefinition
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: Definition, content: { application/json: { schema: { $ref: '#/components/schemas/SubscriptionDefinition' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Delete a subscription definition
+      operationId: deleteSubscriptionDefinition
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
   /v1/source-bindings/{id}:
     delete:
       summary: Revoke a source binding
@@ -415,6 +446,10 @@ components:
       type: object
       required: [tenant_id, consumer_id, committed_offset]
       properties: { tenant_id: { type: string }, consumer_id: { type: string }, committed_offset: { type: integer, minimum: 0 }, updated_at: { type: string, format: date-time } }
+    SubscriptionDefinition:
+      type: object
+      required: [tenant_id, subscription_id, filters, created_at]
+      properties: { tenant_id: { type: string }, subscription_id: { type: string }, filters: { type: object, properties: { kind: { type: string }, subject_id: { type: string }, property: { type: string } } }, created_at: { type: string, format: date-time } }
     ConflictRecord:
       type: object
       required: [tenant_id, subject_id, property, status, assertion_ids, resolution_policy]

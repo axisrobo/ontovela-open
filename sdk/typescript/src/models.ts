@@ -137,6 +137,13 @@ export interface ChangeEvent {
   occurred_at: string;
 }
 
+export interface SubscriptionDefinition {
+  tenant_id: string;
+  subscription_id: string;
+  filters: { kind?: string; subject_id?: string; property?: string };
+  created_at: string;
+}
+
 export interface SubscriptionOffset {
   tenant_id: string;
   consumer_id: string;

@@ -185,6 +185,30 @@ func (c *Client) ListConflicts(ctx context.Context, status string, limit int) ([
 	return result.Conflicts, nil
 }
 
+func (c *Client) CreateSubscriptionDefinition(ctx context.Context, definition SubscriptionDefinition) (SubscriptionDefinition, error) {
+	var result SubscriptionDefinition
+	return result, c.doJSON(ctx, http.MethodPost, "/v1/subscriptions/definitions", nil, definition, "", &result)
+}
+
+func (c *Client) GetSubscriptionDefinition(ctx context.Context, subscriptionID string) (SubscriptionDefinition, error) {
+	var result SubscriptionDefinition
+	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/subscriptions/definitions", subscriptionID), nil, nil, "", &result)
+}
+
+func (c *Client) ListSubscriptionDefinitions(ctx context.Context) ([]SubscriptionDefinition, error) {
+	var result struct {
+		SubscriptionDefinitions []SubscriptionDefinition `json:"subscription_definitions"`
+	}
+	if err := c.doJSON(ctx, http.MethodGet, "/v1/subscriptions/definitions", nil, nil, "", &result); err != nil {
+		return nil, err
+	}
+	return result.SubscriptionDefinitions, nil
+}
+
+func (c *Client) DeleteSubscriptionDefinition(ctx context.Context, subscriptionID string) error {
+	return c.doJSON(ctx, http.MethodDelete, path.Join("/v1/subscriptions/definitions", subscriptionID), nil, nil, "", nil)
+}
+
 func (c *Client) GetSubscriptionOffset(ctx context.Context, consumerID string) (SubscriptionOffset, error) {
 	var result SubscriptionOffset
 	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/subscriptions", consumerID), nil, nil, "", &result)

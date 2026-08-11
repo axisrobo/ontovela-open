@@ -185,6 +185,23 @@ export class OntovelaClient {
     return body.events;
   }
 
+  async createSubscriptionDefinition(definition: Omit<import("./models").SubscriptionDefinition, "tenant_id" | "created_at">): Promise<import("./models").SubscriptionDefinition> {
+    return this.request<import("./models").SubscriptionDefinition>("POST", "/v1/subscriptions/definitions", { body: definition });
+  }
+
+  async getSubscriptionDefinition(subscriptionId: string): Promise<import("./models").SubscriptionDefinition> {
+    return this.request<import("./models").SubscriptionDefinition>("GET", `/v1/subscriptions/definitions/${encodeURIComponent(subscriptionId)}`);
+  }
+
+  async listSubscriptionDefinitions(): Promise<import("./models").SubscriptionDefinition[]> {
+    const body = await this.request<{ subscription_definitions: import("./models").SubscriptionDefinition[] }>("GET", "/v1/subscriptions/definitions");
+    return body.subscription_definitions;
+  }
+
+  async deleteSubscriptionDefinition(subscriptionId: string): Promise<void> {
+    await this.request<void>("DELETE", `/v1/subscriptions/definitions/${encodeURIComponent(subscriptionId)}`);
+  }
+
   async getSubscriptionOffset(consumerId: string): Promise<SubscriptionOffset> {
     return this.request<SubscriptionOffset>("GET", `/v1/subscriptions/${encodeURIComponent(consumerId)}`);
   }

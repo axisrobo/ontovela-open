@@ -167,6 +167,14 @@ class ChangeEvent:
 
 
 @dataclass
+class SubscriptionDefinition:
+    tenant_id: str
+    subscription_id: str
+    filters: dict = field(default_factory=dict)
+    created_at: Optional[str] = None
+
+
+@dataclass
 class SubscriptionOffset:
     tenant_id: str
     consumer_id: str

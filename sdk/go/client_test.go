@@ -215,6 +215,40 @@ func TestReportHeartbeatPostsSource(t *testing.T) {
 	}
 }
 
+func TestSubscriptionDefinitionCRUD(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/v1/subscriptions/definitions" && r.Method == http.MethodPost:
+			var payload SubscriptionDefinition
+			_ = json.NewDecoder(r.Body).Decode(&payload)
+			payload.TenantID = "acme"
+			_ = json.NewEncoder(w).Encode(payload)
+		case r.URL.Path == "/v1/subscriptions/definitions/sub-1" && r.Method == http.MethodGet:
+			_ = json.NewEncoder(w).Encode(SubscriptionDefinition{TenantID: "acme", SubscriptionID: "sub-1"})
+		case r.URL.Path == "/v1/subscriptions/definitions/sub-1" && r.Method == http.MethodDelete:
+			w.WriteHeader(http.StatusNoContent)
+		default:
+			t.Fatalf("path=%s method=%s", r.URL.Path, r.Method)
+		}
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	created, err := client.CreateSubscriptionDefinition(context.Background(), SubscriptionDefinition{SubscriptionID: "sub-1", Filters: ChangeFilter{Kind: "state_assertion.appended"}})
+	if err != nil || created.TenantID != "acme" {
+		t.Fatalf("created=%#v err=%v", created, err)
+	}
+	got, err := client.GetSubscriptionDefinition(context.Background(), "sub-1")
+	if err != nil || got.SubscriptionID != "sub-1" {
+		t.Fatalf("got=%#v err=%v", got, err)
+	}
+	if err := client.DeleteSubscriptionDefinition(context.Background(), "sub-1"); err != nil {
+		t.Fatalf("delete: %v", err)
+	}
+}
+
 func TestListAndRevokeSourceBindings(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {

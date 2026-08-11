@@ -13,6 +13,7 @@ from .models import (
     CausalAnalytics,
     CausalLink,
     SimToRealDelta,
+    SubscriptionDefinition,
     ChangeEvent,
     ConflictRecord,
     ImpactPath,
@@ -145,6 +146,19 @@ class Client:
     def list_changes(self, after: int = 0, limit: int = 100, kind: Optional[str] = None, subject_id: Optional[str] = None, property: Optional[str] = None) -> list:
         body = self._request("GET", "/v1/changes", query=_query(after=after, limit=limit, kind=kind, subject_id=subject_id, property=property))
         return [ChangeEvent(**item) for item in body.get("events", [])]
+
+    def create_subscription_definition(self, subscription_id: str, filters: dict) -> SubscriptionDefinition:
+        return self._post("/v1/subscriptions/definitions", {"subscription_id": subscription_id, "filters": filters}, SubscriptionDefinition)
+
+    def get_subscription_definition(self, subscription_id: str) -> SubscriptionDefinition:
+        return self._request("GET", f"/v1/subscriptions/definitions/{urllib.parse.quote(subscription_id, safe='')}", model=SubscriptionDefinition)
+
+    def list_subscription_definitions(self) -> list:
+        body = self._request("GET", "/v1/subscriptions/definitions")
+        return [SubscriptionDefinition(**item) for item in body.get("subscription_definitions", [])]
+
+    def delete_subscription_definition(self, subscription_id: str) -> None:
+        self._request("DELETE", f"/v1/subscriptions/definitions/{urllib.parse.quote(subscription_id, safe='')}")
 
     def get_subscription_offset(self, consumer_id: str) -> SubscriptionOffset:
         return self._request("GET", f"/v1/subscriptions/{urllib.parse.quote(consumer_id, safe='')}", model=SubscriptionOffset)

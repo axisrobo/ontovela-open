@@ -159,6 +159,13 @@ type ChangeFilter struct {
 	Property  string
 }
 
+type SubscriptionDefinition struct {
+	TenantID       string       `json:"tenant_id"`
+	SubscriptionID string       `json:"subscription_id"`
+	Filters        ChangeFilter `json:"filters"`
+	CreatedAt      time.Time    `json:"created_at"`
+}
+
 type ChangeEvent struct {
 	Offset     int64           `json:"offset"`
 	TenantID   string          `json:"tenant_id"`
