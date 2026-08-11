@@ -263,6 +263,17 @@ func (c *Client) CreateRealityView(ctx context.Context, input RealityViewRequest
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/reality-views", temporal.values(), input, "", &result)
 }
 
+func (c *Client) AuditExportChanges(ctx context.Context, after int64, limit int) ([]ChangeEvent, error) {
+	query := url.Values{"after": []string{strconv.FormatInt(after, 10)}, "limit": []string{strconv.Itoa(limit)}}
+	var result struct {
+		Events []ChangeEvent `json:"events"`
+	}
+	if err := c.doJSON(ctx, http.MethodGet, "/v1/audit/changes", query, nil, "", &result); err != nil {
+		return nil, err
+	}
+	return result.Events, nil
+}
+
 func (c *Client) ListChanges(ctx context.Context, after int64, limit int, filters ChangeFilter) ([]ChangeEvent, error) {
 	query := url.Values{"after": []string{strconv.FormatInt(after, 10)}, "limit": []string{strconv.Itoa(limit)}}
 	if filters.Kind != "" {

@@ -176,6 +176,11 @@ export class OntovelaClient {
     );
   }
 
+  async auditExportChanges(after = 0, limit = 10000): Promise<ChangeEvent[]> {
+    const body = await this.request<{ events: ChangeEvent[] }>("GET", "/v1/audit/changes", { query: { after: String(after), limit: String(limit) } });
+    return body.events;
+  }
+
   async listChanges(after = 0, limit = 100, filters: { kind?: string; subjectId?: string; property?: string } = {}): Promise<ChangeEvent[]> {
     const query: Record<string, string> = { after: String(after), limit: String(limit) };
     if (filters.kind !== undefined) query.kind = filters.kind;

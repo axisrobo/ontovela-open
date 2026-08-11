@@ -208,6 +208,19 @@ paths:
       responses:
         '200': { description: Updated cursor, content: { application/json: { schema: { $ref: '#/components/schemas/SubscriptionOffset' } } } }
         '409': { description: Offset rewind rejected, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /v1/audit/changes:
+    get:
+      summary: Export a tenant's change feed for audit
+      operationId: auditExportChanges
+      parameters:
+        - name: after
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 0, maximum: 10000, default: 10000 }
+      responses:
+        '200': { description: Audit export envelope, content: { application/json: { schema: { type: object, required: [exported_at, count, events], properties: { exported_at: { type: string, format: date-time }, count: { type: integer }, events: { type: array, items: { $ref: '#/components/schemas/ChangeEvent' } } } } } } }
   /v1/conflicts:
     get:
       summary: List current tenant conflict records
