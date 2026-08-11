@@ -42,6 +42,10 @@ before(async () => {
       sendJson(response, 200, { impact_paths: [{ subject_id: "twin-1", depth: 1, relation_id: "r1", predicate: "located_in", target_id: "zone-1", state_kind: "observed", source: "map", evidence_ref: "e1" }] });
       return;
     }
+    if (request.method === "GET" && request.url?.startsWith("/v1/twins/twin-1/snapshots")) {
+      sendJson(response, 200, { snapshots: [{ id: "s1", tenant_id: "acme", subject_id: "twin-1", resolution_policy: "p", digest: "d", states: [], relations: [], created_at: "2026-08-11T00:00:00Z" }] });
+      return;
+    }
     if (request.method === "POST" && request.url === "/v1/heartbeats") {
       let body = "";
       request.on("data", (chunk) => (body += chunk));
@@ -89,6 +93,13 @@ test("APIError carries status and message", async () => {
     () => client.getTwin("missing"),
     (error: unknown) => error instanceof APIError && error.status === 404 && error.serverMessage === "not found",
   );
+});
+
+test("listSnapshots parses list", async () => {
+  const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
+  const snapshots = await client.listSnapshots("twin-1", 10);
+  assert.equal(snapshots.length, 1);
+  assert.equal(snapshots[0].id, "s1");
 });
 
 test("reportHeartbeat posts source", async () => {

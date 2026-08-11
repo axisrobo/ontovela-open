@@ -107,6 +107,18 @@ func (c *Client) ResolveState(ctx context.Context, twinID, property string, temp
 	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/twins", twinID, "state", property), temporal.values(), nil, "", &result)
 }
 
+func (c *Client) ListSnapshots(ctx context.Context, twinID string, limit int) ([]Snapshot, error) {
+	query := make(url.Values)
+	query.Set("limit", strconv.Itoa(limit))
+	var result struct {
+		Snapshots []Snapshot `json:"snapshots"`
+	}
+	if err := c.doJSON(ctx, http.MethodGet, path.Join("/v1/twins", twinID, "snapshots"), query, nil, "", &result); err != nil {
+		return nil, err
+	}
+	return result.Snapshots, nil
+}
+
 func (c *Client) CreateSnapshot(ctx context.Context, twinID string, temporal TemporalQuery) (Snapshot, error) {
 	var result Snapshot
 	return result, c.doJSON(ctx, http.MethodPost, path.Join("/v1/twins", twinID, "snapshots"), temporal.values(), nil, "", &result)

@@ -121,6 +121,11 @@ export class OntovelaClient {
     return this.request<RealityView>("POST", "/v1/reality-views", { body: input, query: this.temporalQuery({}, temporal) });
   }
 
+  async listSnapshots(twinId: string, limit = 100): Promise<Snapshot[]> {
+    const body = await this.request<{ snapshots: Snapshot[] }>("GET", `/v1/twins/${encodeURIComponent(twinId)}/snapshots`, { query: { limit: String(limit) } });
+    return body.snapshots;
+  }
+
   async createSnapshot(twinId: string, temporal?: TemporalQuery): Promise<Snapshot> {
     return this.request<Snapshot>("POST", `/v1/twins/${encodeURIComponent(twinId)}/snapshots`, { query: this.temporalQuery({}, temporal) });
   }

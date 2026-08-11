@@ -120,6 +120,24 @@ func TestListConflictsFiltersByStatus(t *testing.T) {
 	}
 }
 
+func TestListSnapshotsParsesOrderedList(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/twins/robot:wh-17/snapshots" || r.URL.Query().Get("limit") != "10" {
+			t.Fatalf("path=%s query=%s", r.URL.Path, r.URL.RawQuery)
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"snapshots": []Snapshot{{ID: "snap-1"}, {ID: "snap-2"}}})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	snapshots, err := client.ListSnapshots(context.Background(), "robot:wh-17", 10)
+	if err != nil || len(snapshots) != 2 || snapshots[0].ID != "snap-1" {
+		t.Fatalf("snapshots=%#v err=%v", snapshots, err)
+	}
+}
+
 func TestReportHeartbeatPostsSource(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/heartbeats" {

@@ -82,6 +82,25 @@ class ClientTest(unittest.TestCase):
         state = client.resolve_state("twin-1", "health", as_of=when, as_known=when)
         self.assertEqual(state.status, "resolved")
 
+    def test_list_snapshots_parses_list(self):
+        handler = _Handler
+        original_do_get = handler.do_GET
+
+        def patched(self):
+            if self.path.startswith("/v1/twins/twin-1/snapshots"):
+                self._json(200, {"snapshots": [{"id": "s1", "tenant_id": "acme", "subject_id": "twin-1", "resolution_policy": "p", "digest": "d", "states": [], "relations": [], "created_at": "2026-08-11T00:00:00Z"}]})
+                return
+            original_do_get(self)
+
+        handler.do_GET = patched
+        try:
+            client = Client(self.base_url, "acme")
+            snapshots = client.list_snapshots("twin-1", limit=10)
+            self.assertEqual(len(snapshots), 1)
+            self.assertEqual(snapshots[0].id, "s1")
+        finally:
+            handler.do_GET = original_do_get
+
     def test_report_heartbeat_posts_source(self):
         handler = _Handler
         original_do_post = handler.do_POST

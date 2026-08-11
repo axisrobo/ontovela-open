@@ -202,6 +202,17 @@ paths:
       responses:
         '201': { description: Snapshot created, content: { application/json: { schema: { $ref: '#/components/schemas/Snapshot' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
+  /v1/twins/{id}/snapshots:
+    get:
+      summary: List a Twin's snapshots newest-first
+      operationId: listSnapshots
+      parameters:
+        - $ref: '#/components/parameters/TwinID'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 0, maximum: 500, default: 100 }
+      responses:
+        '200': { description: Ordered snapshot list, content: { application/json: { schema: { type: object, required: [snapshots], properties: { snapshots: { type: array, items: { $ref: '#/components/schemas/Snapshot' } } } } } } }
   /v1/snapshots/{id}:
     get:
       summary: Read a snapshot manifest

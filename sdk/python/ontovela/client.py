@@ -107,6 +107,10 @@ class Client:
         raw = self._request("POST", "/v1/reality-views", query=query, body=body)
         return self._reality_view(raw)
 
+    def list_snapshots(self, twin_id: str, limit: int = 100) -> list:
+        body = self._request("GET", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/snapshots", query=_query(limit=limit))
+        return [Snapshot(**item) for item in body.get("snapshots", [])]
+
     def create_snapshot(self, twin_id: str, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None) -> Snapshot:
         query = _query(as_of=to_iso(as_of), as_known=to_iso(as_known))
         return self._request("POST", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/snapshots", query=query, model=Snapshot)
