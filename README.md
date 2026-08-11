@@ -40,3 +40,4 @@ See `docs/repository-boundary.md`.
 - SQL/REST polling adapter: `adapters/sqlrest/`
 - Edge spool adapter: `adapters/edge/`
 - Quickstart: `docs/quickstart.md`
+- Reference scenarios: `examples/warehouse-robot.md`, `examples/incident-response.md`, `examples/supply-chain-counterfactual.md`
