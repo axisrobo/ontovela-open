@@ -36,3 +36,4 @@ See `docs/repository-boundary.md`.
 - Harmovela evidence adapter: `adapters/harmovela/`
 - Prediction adapter: `adapters/prediction/`
 - HTTP/webhook adapter: `adapters/httpwebhook/`
+- Stream ingest adapter (Kafka/NATS): `adapters/stream/`
