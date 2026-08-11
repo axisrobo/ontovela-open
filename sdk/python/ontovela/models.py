@@ -201,6 +201,16 @@ class TwinType:
 
 
 @dataclass
+class SimToRealDelta:
+    tenant_id: str
+    twin_id: str
+    property: str
+    real_state: ResolvedState
+    simulated_state: ResolvedState
+    delta: str = "unknown"
+
+
+@dataclass
 class CausalAnalytics:
     twin_id: str
     fan_out: int = 0

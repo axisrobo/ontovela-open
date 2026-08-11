@@ -167,6 +167,15 @@ export interface TwinType {
   relations: string[];
 }
 
+export interface SimToRealDelta {
+  tenant_id: string;
+  twin_id: string;
+  property: string;
+  real_state: ResolvedState;
+  simulated_state: ResolvedState;
+  delta: "match" | "diverges" | "unknown";
+}
+
 export interface CausalAnalytics {
   twin_id: string;
   fan_out: number;

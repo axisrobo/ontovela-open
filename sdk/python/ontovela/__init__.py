@@ -4,6 +4,7 @@ from .client import APIError, Client
 from .models import (
     CausalAnalytics,
     CausalLink,
+    SimToRealDelta,
     ChangeEvent,
     ConflictRecord,
     ImpactPath,
@@ -28,6 +29,7 @@ __all__ = [
     "Client",
     "CausalAnalytics",
     "CausalLink",
+    "SimToRealDelta",
     "ChangeEvent",
     "ConflictRecord",
     "ImpactPath",

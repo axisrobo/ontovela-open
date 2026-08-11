@@ -12,6 +12,7 @@ from typing import Any, Optional
 from .models import (
     CausalAnalytics,
     CausalLink,
+    SimToRealDelta,
     ChangeEvent,
     ConflictRecord,
     ImpactPath,
@@ -150,6 +151,9 @@ class Client:
 
     def commit_subscription_offset(self, consumer_id: str, offset: int) -> SubscriptionOffset:
         return self._post(f"/v1/subscriptions/{urllib.parse.quote(consumer_id, safe='')}/commit", {"offset": offset}, SubscriptionOffset)
+
+    def sim_to_real(self, twin_id: str, property: str, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None) -> SimToRealDelta:
+        return self._request("GET", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/sim-to-real/{urllib.parse.quote(property, safe='')}", query=_query(as_of=to_iso(as_of), as_known=to_iso(as_known)), model=SimToRealDelta)
 
     def compute_causal_analytics(self, twin_id: str) -> CausalAnalytics:
         return self._request("GET", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/causal/analytics", model=CausalAnalytics)

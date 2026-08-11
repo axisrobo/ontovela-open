@@ -122,6 +122,10 @@ export class OntovelaClient {
     );
   }
 
+  async simToReal(twinId: string, property: string, temporal?: TemporalQuery): Promise<import("./models").SimToRealDelta> {
+    return this.request<import("./models").SimToRealDelta>("GET", `/v1/twins/${encodeURIComponent(twinId)}/sim-to-real/${encodeURIComponent(property)}`, { query: this.temporalQuery({}, temporal) });
+  }
+
   async computeCausalAnalytics(twinId: string): Promise<import("./models").CausalAnalytics> {
     return this.request<import("./models").CausalAnalytics>("GET", `/v1/twins/${encodeURIComponent(twinId)}/causal/analytics`);
   }

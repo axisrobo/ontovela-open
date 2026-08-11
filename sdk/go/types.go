@@ -199,6 +199,15 @@ type TwinType struct {
 	Relations   []string `json:"relations"`
 }
 
+type SimToRealDelta struct {
+	TenantID       string        `json:"tenant_id"`
+	TwinID         string        `json:"twin_id"`
+	Property       string        `json:"property"`
+	RealState      ResolvedState `json:"real_state"`
+	SimulatedState ResolvedState `json:"simulated_state"`
+	Delta          string        `json:"delta"`
+}
+
 type CausalAnalytics struct {
 	TwinID     string         `json:"twin_id"`
 	FanOut     int            `json:"fan_out"`

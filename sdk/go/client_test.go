@@ -120,6 +120,24 @@ func TestListConflictsFiltersByStatus(t *testing.T) {
 	}
 }
 
+func TestSimToRealParsesDelta(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/twins/robot:wh-17/sim-to-real/health" {
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(SimToRealDelta{TwinID: "robot:wh-17", Property: "health", Delta: "diverges"})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	delta, err := client.SimToReal(context.Background(), "robot:wh-17", "health", TemporalQuery{})
+	if err != nil || delta.Delta != "diverges" {
+		t.Fatalf("delta=%#v err=%v", delta, err)
+	}
+}
+
 func TestComputeCausalAnalyticsParsesCounts(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/twins/robot:wh-17/causal/analytics" {

@@ -42,6 +42,10 @@ before(async () => {
       sendJson(response, 200, { impact_paths: [{ subject_id: "twin-1", depth: 1, relation_id: "r1", predicate: "located_in", target_id: "zone-1", state_kind: "observed", source: "map", evidence_ref: "e1" }] });
       return;
     }
+    if (request.method === "GET" && request.url?.startsWith("/v1/twins/twin-1/sim-to-real/")) {
+      sendJson(response, 200, { tenant_id: "acme", twin_id: "twin-1", property: "health", real_state: {}, simulated_state: {}, delta: "diverges" });
+      return;
+    }
     if (request.method === "GET" && request.url?.startsWith("/v1/twins/twin-1/causal/analytics")) {
       sendJson(response, 200, { twin_id: "twin-1", fan_out: 3, fan_in: 1, top_targets: { "bin-1": 2 } });
       return;
@@ -133,6 +137,12 @@ test("updateTwinLifecycle posts lifecycle", async () => {
   const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
   const twin = await client.updateTwinLifecycle("twin-1", "retired");
   assert.equal(twin.lifecycle, "retired");
+});
+
+test("simToReal parses delta", async () => {
+  const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
+  const delta = await client.simToReal("twin-1", "health");
+  assert.equal(delta.delta, "diverges");
 });
 
 test("computeCausalAnalytics parses counts", async () => {

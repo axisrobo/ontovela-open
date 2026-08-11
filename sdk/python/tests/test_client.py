@@ -82,6 +82,24 @@ class ClientTest(unittest.TestCase):
         state = client.resolve_state("twin-1", "health", as_of=when, as_known=when)
         self.assertEqual(state.status, "resolved")
 
+    def test_sim_to_real_parses_delta(self):
+        handler = _Handler
+        original_do_get = handler.do_GET
+
+        def patched(self):
+            if self.path.startswith("/v1/twins/twin-1/sim-to-real/"):
+                self._json(200, {"tenant_id": "acme", "twin_id": "twin-1", "property": "health", "real_state": {}, "simulated_state": {}, "delta": "diverges"})
+                return
+            original_do_get(self)
+
+        handler.do_GET = patched
+        try:
+            client = Client(self.base_url, "acme")
+            delta = client.sim_to_real("twin-1", "health")
+            self.assertEqual(delta.delta, "diverges")
+        finally:
+            handler.do_GET = original_do_get
+
     def test_compute_causal_analytics_parses_counts(self):
         handler = _Handler
         original_do_get = handler.do_GET

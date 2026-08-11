@@ -197,6 +197,11 @@ func (c *Client) CommitSubscriptionOffset(ctx context.Context, consumerID string
 	}{Offset: offset}, "", &result)
 }
 
+func (c *Client) SimToReal(ctx context.Context, twinID, property string, temporal TemporalQuery) (SimToRealDelta, error) {
+	var result SimToRealDelta
+	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/twins", twinID, "sim-to-real", property), temporal.values(), nil, "", &result)
+}
+
 func (c *Client) ComputeCausalAnalytics(ctx context.Context, twinID string) (CausalAnalytics, error) {
 	var result CausalAnalytics
 	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/twins", twinID, "causal", "analytics"), nil, nil, "", &result)

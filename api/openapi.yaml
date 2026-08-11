@@ -211,6 +211,17 @@ paths:
       parameters: [ { $ref: '#/components/parameters/TwinID' } ]
       responses:
         '200': { description: Causal analytics, content: { application/json: { schema: { $ref: '#/components/schemas/CausalAnalytics' } } } }
+  /v1/twins/{id}/sim-to-real/{property}:
+    get:
+      summary: Compare real and simulated resolved state for a property
+      operationId: simToReal
+      parameters:
+        - $ref: '#/components/parameters/TwinID'
+        - $ref: '#/components/parameters/PropertyPath'
+        - $ref: '#/components/parameters/AsOf'
+        - $ref: '#/components/parameters/AsKnown'
+      responses:
+        '200': { description: Sim-to-real delta, content: { application/json: { schema: { $ref: '#/components/schemas/SimToRealDelta' } } } }
   /v1/twins/{id}/impact:
     get:
       summary: Compute twin impact paths over temporal relations
@@ -420,4 +431,8 @@ components:
       type: object
       required: [twin_id, fan_out, fan_in, top_targets]
       properties: { twin_id: { type: string }, fan_out: { type: integer }, fan_in: { type: integer }, top_targets: { type: object, additionalProperties: { type: integer } } }
+    SimToRealDelta:
+      type: object
+      required: [tenant_id, twin_id, property, real_state, simulated_state, delta]
+      properties: { tenant_id: { type: string }, twin_id: { type: string }, property: { type: string }, real_state: { $ref: '#/components/schemas/ResolvedState' }, simulated_state: { $ref: '#/components/schemas/ResolvedState' }, delta: { type: string, enum: [match, diverges, unknown] } }
     Error: { type: object, required: [error], properties: { error: { type: string } } }
