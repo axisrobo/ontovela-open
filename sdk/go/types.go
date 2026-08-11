@@ -36,6 +36,7 @@ type SourceBindingInput struct {
 	Property      string `json:"property"`
 	AuthorityRank int    `json:"authority_rank"`
 	MaxLagSeconds int    `json:"max_lag_seconds"`
+	PrincipalRef  string `json:"principal_ref,omitempty"`
 }
 
 type SourceBinding struct {

@@ -18,6 +18,7 @@ export interface SourceBindingInput {
   property: string;
   authority_rank: number;
   max_lag_seconds: number;
+  principal_ref?: string;
 }
 
 export interface SourceBinding extends SourceBindingInput {

@@ -34,6 +34,7 @@ class SourceBindingInput:
     property: str
     authority_rank: int = 0
     max_lag_seconds: int = 0
+    principal_ref: Optional[str] = None
 
 
 @dataclass
