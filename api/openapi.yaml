@@ -390,7 +390,7 @@ paths:
       operationId: verifySnapshot
       parameters: [ { $ref: '#/components/parameters/SnapshotID' } ]
       responses:
-        '200': { description: Verification result, content: { application/json: { schema: { type: object, required: [snapshot_id, valid], properties: { snapshot_id: { type: string }, valid: { type: boolean } } } } } }
+        '200': { description: Verification result, content: { application/json: { schema: { type: object, required: [snapshot_id, valid], properties: { snapshot_id: { type: string }, valid: { type: boolean }, resolution_policy: { type: string } } } } } }
   /v1/snapshots/{id}/diff/{other}:
     get:
       summary: Diff two snapshots of the same Twin
