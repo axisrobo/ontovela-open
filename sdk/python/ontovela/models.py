@@ -113,6 +113,7 @@ class RealityViewRequest:
     required_state: list = field(default_factory=list)
     authorization_ref: Optional[str] = None
     exclude_state_kinds: list = field(default_factory=list)
+    twin_ids: list = field(default_factory=list)
 
 
 @dataclass

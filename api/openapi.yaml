@@ -175,6 +175,9 @@ paths:
       parameters:
         - $ref: '#/components/parameters/TwinID'
         - $ref: '#/components/parameters/Property'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 1000 }
         - $ref: '#/components/parameters/AsOf'
         - $ref: '#/components/parameters/AsKnown'
       responses:
@@ -189,6 +192,9 @@ paths:
         - name: direction
           in: query
           schema: { type: string, enum: [outgoing, incoming] }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 1000 }
         - $ref: '#/components/parameters/AsOf'
         - $ref: '#/components/parameters/AsKnown'
       responses:
@@ -464,7 +470,7 @@ components:
     RealityViewRequest:
       type: object
       required: [twin_id, purpose, required_state]
-      properties: { twin_id: { type: string }, purpose: { type: string, minLength: 1 }, required_state: { type: array, minItems: 1, items: { $ref: '#/components/schemas/RequiredState' } }, authorization_ref: { type: string }, exclude_state_kinds: { type: array, items: { $ref: '#/components/schemas/StateKind' } } }
+      properties: { twin_id: { type: string }, purpose: { type: string, minLength: 1 }, required_state: { type: array, minItems: 1, items: { $ref: '#/components/schemas/RequiredState' } }, authorization_ref: { type: string }, exclude_state_kinds: { type: array, items: { $ref: '#/components/schemas/StateKind' } }, twin_ids: { type: array, items: { type: string }, description: "Batch mode: evaluate the same requirements for multiple twins and return a views array" } }
     RealityViewItem:
       type: object
       required: [property, acceptable, state]

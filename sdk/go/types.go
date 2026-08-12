@@ -115,6 +115,7 @@ type RealityViewRequest struct {
 	RequiredState     []RequiredState `json:"required_state"`
 	AuthorizationRef  string          `json:"authorization_ref,omitempty"`
 	ExcludeStateKinds []StateKind     `json:"exclude_state_kinds,omitempty"`
+	TwinIDs           []string        `json:"twin_ids,omitempty"`
 }
 
 type RealityViewItem struct {

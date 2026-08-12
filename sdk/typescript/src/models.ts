@@ -89,6 +89,7 @@ export interface RealityViewRequest {
   required_state: RequiredState[];
   authorization_ref?: string;
   exclude_state_kinds?: StateKind[];
+  twin_ids?: string[];
 }
 
 export interface RealityViewItem {
