@@ -97,6 +97,9 @@ class Client:
     def append_assertion(self, payload: StateAssertion, idempotency_key: str) -> StateAssertion:
         return self._post("/v1/assertions", self._assertion_dict(payload), StateAssertion, idempotency_key=idempotency_key)
 
+    def get_relation(self, relation_id: str) -> RelationAssertion:
+        return self._request("GET", f"/v1/relations/{urllib.parse.quote(relation_id, safe='')}", model=RelationAssertion)
+
     def append_relation(self, payload: RelationAssertion, idempotency_key: str) -> RelationAssertion:
         return self._post("/v1/relations", self._relation_dict(payload), RelationAssertion, idempotency_key=idempotency_key)
 

@@ -239,6 +239,24 @@ func TestRetryWithBackoffOnTransientErrors(t *testing.T) {
 	}
 }
 
+func TestGetRelationByID(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/relations/r1" {
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(RelationAssertion{ID: "r1", TenantID: "acme"})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	relation, err := client.GetRelation(context.Background(), "r1")
+	if err != nil || relation.ID != "r1" {
+		t.Fatalf("relation=%#v err=%v", relation, err)
+	}
+}
+
 func TestLatestClaimAndSnapshotScope(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {

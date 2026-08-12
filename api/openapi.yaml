@@ -167,6 +167,14 @@ paths:
       responses:
         '200': { description: Assertion, content: { application/json: { schema: { $ref: '#/components/schemas/StateAssertion' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
+  /v1/relations/{id}:
+    get:
+      summary: Read a relation assertion by ID
+      operationId: getRelation
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: Relation assertion, content: { application/json: { schema: { $ref: '#/components/schemas/RelationAssertion' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
   /v1/relations:
     post:
       summary: Append an immutable temporal relation assertion
