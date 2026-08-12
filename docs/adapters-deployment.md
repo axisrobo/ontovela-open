@@ -26,3 +26,6 @@ payload contract.
   trace headers.
 - Core `/metrics` and `/healthz` reflect core readiness; adapters report their
   own liveness to the orchestrator.
+- Adapter readiness is an orchestrator concern: each adapter exposes a liveness
+  probe that verifies its protocol client connection and a readiness probe that
+  verifies it can reach the ONTOVELA core before traffic is routed.
