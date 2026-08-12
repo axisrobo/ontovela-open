@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	ontovela "github.com/axisrobo/ONTOVELA-open/sdk/go"
 )
 
 var ErrPredictionFailed = errors.New("prediction failed")
@@ -94,6 +96,18 @@ func (p *HTTPPredictor) Predict(ctx context.Context, request PredictionRequest) 
 		return Prediction{}, fmt.Errorf("%w: invalid value or confidence", ErrPredictionFailed)
 	}
 	return prediction, nil
+}
+
+// AppendTo converts a prediction and appends it to the core as a predicted
+// assertion through the public SDK client.
+func AppendTo(ctx context.Context, client *ontovela.Client, prediction Prediction, request PredictionRequest, source, evidenceRef string, generatedAt time.Time) error {
+	input := ToAssertionInput(prediction, request, source, evidenceRef, generatedAt)
+	_, err := client.AppendAssertion(ctx, ontovela.StateAssertionInput{
+		SubjectID: input.SubjectID, Property: input.Property, Value: input.Value,
+		StateKind: ontovela.StateKind(input.StateKind), EventTime: input.EventTime,
+		Source: input.Source, Confidence: input.Confidence, EvidenceRef: input.EvidenceRef,
+	}, evidenceRef)
+	return err
 }
 
 // ToAssertionInput converts a prediction into a predicted StateAssertionInput.

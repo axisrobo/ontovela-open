@@ -1,0 +1,31 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - name: Package developer binary
+        shell: pwsh
+        env:
+          ONTOVELA_VERSION: ${{ github.ref_name }}
+        run: |
+          .\scripts\package.ps1
+      - name: Create release with binary
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" `
+            "dist/ontovela-${{ github.ref_name }}-windows-amd64.zip" `
+            --title "ONTOVELA Open ${{ github.ref_name }}" `
+            --notes "ONTOVELA Open release with packaged Windows developer binary."
