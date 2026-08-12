@@ -19,6 +19,7 @@ type Client struct {
 	BaseURL    *url.URL
 	TenantID   string
 	HTTPClient *http.Client
+	MaxRetries int
 }
 
 func NewClient(baseURL, tenantID string) (*Client, error) {
@@ -343,22 +344,39 @@ func (c *Client) doJSON(ctx context.Context, method, endpoint string, query url.
 	if client == nil {
 		client = http.DefaultClient
 	}
-	response, err := client.Do(request)
-	if err != nil {
-		return err
+	var response *http.Response
+	for attempt := 0; attempt <= c.MaxRetries; attempt++ {
+		response, err = client.Do(request)
+		if err != nil {
+			return err
+		}
+		if response.StatusCode >= http.StatusOK && response.StatusCode < http.StatusMultipleChoices {
+			break
+		}
+		if !c.retryable(response.StatusCode) || attempt == c.MaxRetries {
+			defer response.Body.Close()
+			var apiError struct {
+				Error string `json:"error"`
+			}
+			_ = json.NewDecoder(response.Body).Decode(&apiError)
+			return &APIError{StatusCode: response.StatusCode, Message: apiError.Error}
+		}
+		_ = response.Body.Close()
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(time.Duration(1<<attempt) * 100 * time.Millisecond):
+		}
 	}
 	defer response.Body.Close()
-	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
-		var apiError struct {
-			Error string `json:"error"`
-		}
-		_ = json.NewDecoder(response.Body).Decode(&apiError)
-		return &APIError{StatusCode: response.StatusCode, Message: apiError.Error}
-	}
 	if output == nil || response.StatusCode == http.StatusNoContent {
 		return nil
 	}
 	return json.NewDecoder(response.Body).Decode(output)
+}
+
+func (c *Client) retryable(status int) bool {
+	return status == http.StatusTooManyRequests || status >= http.StatusInternalServerError
 }
 
 func (q TemporalQuery) values() url.Values {

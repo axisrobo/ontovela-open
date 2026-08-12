@@ -215,6 +215,30 @@ func TestReportHeartbeatPostsSource(t *testing.T) {
 	}
 }
 
+func TestRetryWithBackoffOnTransientErrors(t *testing.T) {
+	var attempts int
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		if attempts < 3 {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(Twin{})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	client.MaxRetries = 3
+	if _, err := client.GetTwin(context.Background(), "twin-1"); err != nil {
+		t.Fatalf("retry should succeed: %v", err)
+	}
+	if attempts != 3 {
+		t.Fatalf("attempts = %d, want 3", attempts)
+	}
+}
+
 func TestGetAssertionByID(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/assertions/a1" {
