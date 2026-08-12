@@ -177,9 +177,39 @@ class Client:
         body = self._request("GET", "/v1/audit/changes", query=_query(after=after, limit=limit))
         return [ChangeEvent(**item) for item in body.get("events", [])]
 
+    def stream_audit_changes(self, after: int = 0, on_page: Optional[callable] = None) -> list:
+        """Streams the tenant change feed as NDJSON until the server signals done."""
+        url = self.base_url + "/v1/audit/changes/stream"
+        if after:
+            url += "?" + urllib.parse.urlencode({"after": after})
+        request = urllib.request.Request(url, method="GET", headers={"Accept": "application/x-ndjson", "X-Tenant-ID": self.tenant_id})
+        collected: list = []
+        with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            for raw in response:
+                line = raw.strip()
+                if not line:
+                    continue
+                envelope = json.loads(line)
+                if envelope.get("done"):
+                    break
+                events = [ChangeEvent(**item) for item in envelope.get("events", [])]
+                collected.extend(events)
+                if on_page is not None and not on_page(events, envelope.get("after", 0)):
+                    break
+        return collected
+
     def list_changes(self, after: int = 0, limit: int = 100, kind: Optional[str] = None, subject_id: Optional[str] = None, property: Optional[str] = None) -> list:
         body = self._request("GET", "/v1/changes", query=_query(after=after, limit=limit, kind=kind, subject_id=subject_id, property=property))
         return [ChangeEvent(**item) for item in body.get("events", [])]
+
+    def consume_changes(self, consumer_id: str, limit: int = 100, filters: Optional[dict] = None) -> list:
+        """Fetches events after the consumer's committed offset and commits the last delivered offset."""
+        filters = filters or {}
+        cursor = self.get_subscription_offset(consumer_id)
+        events = self.list_changes(cursor.committed_offset, limit, **filters)
+        if events:
+            self.commit_subscription_offset(consumer_id, events[-1].offset)
+        return events
 
     def create_subscription_definition(self, subscription_id: str, filters: dict) -> SubscriptionDefinition:
         return self._post("/v1/subscriptions/definitions", {"subscription_id": subscription_id, "filters": filters}, SubscriptionDefinition)

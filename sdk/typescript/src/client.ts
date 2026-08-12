@@ -223,6 +223,40 @@ export class OntovelaClient {
     return body.events;
   }
 
+  async streamAuditChanges(after = 0, onPage?: (events: ChangeEvent[], nextAfter: number) => boolean): Promise<ChangeEvent[]> {
+    const query = after > 0 ? `?after=${after}` : "";
+    const url = `${this.baseUrl}/v1/audit/changes/stream${query}`;
+    const headers: Record<string, string> = { Accept: "application/x-ndjson", "X-Tenant-ID": this.tenantId };
+    const response = await this.fetchFn(url, { headers });
+    if (!response.ok) {
+      throw new APIError(response.status, `stream failed (${response.status})`);
+    }
+    if (!response.body) {
+      throw new Error("streaming unsupported in this environment");
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    const collected: ChangeEvent[] = [];
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let newline: number;
+      while ((newline = buffer.indexOf("\n")) >= 0) {
+        const line = buffer.slice(0, newline).trim();
+        buffer = buffer.slice(newline + 1);
+        if (!line) continue;
+        const envelope = JSON.parse(line) as { after?: number; events?: ChangeEvent[]; done?: boolean };
+        if (envelope.done) return collected;
+        const events = envelope.events ?? [];
+        collected.push(...events);
+        if (onPage && !onPage(events, envelope.after ?? after)) return collected;
+      }
+    }
+    return collected;
+  }
+
   async listChanges(after = 0, limit = 100, filters: { kind?: string; subjectId?: string; property?: string } = {}): Promise<ChangeEvent[]> {
     const query: Record<string, string> = { after: String(after), limit: String(limit) };
     if (filters.kind !== undefined) query.kind = filters.kind;
@@ -230,6 +264,15 @@ export class OntovelaClient {
     if (filters.property !== undefined) query.property = filters.property;
     const body = await this.request<{ events: ChangeEvent[] }>("GET", "/v1/changes", { query });
     return body.events;
+  }
+
+  async consumeChanges(consumerId: string, limit = 100, filters: { kind?: string; subjectId?: string; property?: string } = {}): Promise<ChangeEvent[]> {
+    const cursor = await this.getSubscriptionOffset(consumerId);
+    const events = await this.listChanges(cursor.committed_offset, limit, filters);
+    if (events.length > 0) {
+      await this.commitSubscriptionOffset(consumerId, events[events.length - 1].offset);
+    }
+    return events;
   }
 
   async createSubscriptionDefinition(definition: Omit<import("./models").SubscriptionDefinition, "tenant_id" | "created_at">): Promise<import("./models").SubscriptionDefinition> {

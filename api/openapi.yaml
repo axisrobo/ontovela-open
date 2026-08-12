@@ -2,6 +2,11 @@ openapi: 3.1.0
 info:
   title: ONTOVELA Operational World Model API
   version: 0.1.0
+  description: |
+    Public v0.1 contract for evidence-bearing operational state. Operational
+    writes are tenant-scoped, source-bound, evidence-bearing, and idempotent.
+    A resolved state is an explainable view over immutable claims, never a
+    destructive latest-value update.
 tags:
   - name: twins
     description: Twin registry, lifecycle, and history
@@ -13,11 +18,6 @@ tags:
     description: Change feed, offsets, and definitions
   - name: governance
     description: Source bindings, conflicts, twin types, audit, and heartbeats
-  description: |
-    Public v0.1 contract for evidence-bearing operational state. Operational
-    writes are tenant-scoped, source-bound, evidence-bearing, and idempotent.
-    A resolved state is an explainable view over immutable claims, never a
-    destructive latest-value update.
 servers:
   - url: http://localhost:8080
 security:
@@ -298,6 +298,16 @@ paths:
           schema: { type: integer, minimum: 0, maximum: 10000, default: 10000 }
       responses:
         '200': { description: Audit export envelope, content: { application/json: { schema: { type: object, required: [exported_at, count, events], properties: { exported_at: { type: string, format: date-time }, count: { type: integer }, events: { type: array, items: { $ref: '#/components/schemas/ChangeEvent' } } } } } } }
+  /v1/audit/changes/stream:
+    get:
+      summary: Stream a tenant's change feed as newline-delimited JSON
+      operationId: streamAuditChanges
+      parameters:
+        - name: after
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200': { description: NDJSON stream of paged change envelopes, content: { application/x-ndjson: { schema: { type: object } } } }
   /v1/conflicts:
     get:
       summary: List current tenant conflict records

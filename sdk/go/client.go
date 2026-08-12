@@ -1,6 +1,7 @@
 package ontovela
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -356,6 +357,63 @@ func (c *Client) AuditExportChanges(ctx context.Context, after int64, limit int)
 		return nil, err
 	}
 	return result.Events, nil
+}
+
+// StreamAuditChanges drains the tenant change feed page by page as
+// newline-delimited JSON until the server signals completion. Each page is
+// delivered via the callback, which may return false to stop early.
+func (c *Client) StreamAuditChanges(ctx context.Context, after int64, callback func(page []ChangeEvent, nextAfter int64) bool) (int64, error) {
+	if c == nil || c.BaseURL == nil {
+		return after, nil
+	}
+	relative, err := url.Parse("/v1/audit/changes/stream")
+	if err != nil {
+		return after, err
+	}
+	target := c.BaseURL.ResolveReference(relative)
+	query := url.Values{"after": []string{strconv.FormatInt(after, 10)}}
+	target.RawQuery = query.Encode()
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, target.String(), nil)
+	if err != nil {
+		return after, err
+	}
+	request.Header.Set("Accept", "application/x-ndjson")
+	request.Header.Set("X-Tenant-ID", c.TenantID)
+	client := c.HTTPClient
+	if client == nil {
+		client = http.DefaultClient
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		return after, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return after, &APIError{StatusCode: response.StatusCode, Message: "stream failed"}
+	}
+	scanner := bufio.NewScanner(response.Body)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+		var envelope struct {
+			After  int64         `json:"after"`
+			Events []ChangeEvent `json:"events"`
+			Done   bool          `json:"done"`
+		}
+		if err := json.Unmarshal([]byte(line), &envelope); err != nil {
+			return after, err
+		}
+		after = envelope.After
+		if envelope.Done || len(envelope.Events) == 0 {
+			return after, nil
+		}
+		if !callback(envelope.Events, after) {
+			return after, nil
+		}
+	}
+	return after, scanner.Err()
 }
 
 func (c *Client) ListChanges(ctx context.Context, after int64, limit int, filters ChangeFilter) ([]ChangeEvent, error) {

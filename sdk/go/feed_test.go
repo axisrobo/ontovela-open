@@ -38,3 +38,31 @@ func TestConsumeChangesFetchesAndCommits(t *testing.T) {
 		t.Fatalf("events=%#v commits=%v", events, commits)
 	}
 }
+
+func TestStreamChangesDrainsUntilDone(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/audit/changes/stream" || r.URL.Query().Get("after") != "0" {
+			t.Fatalf("path=%s query=%s", r.URL.Path, r.URL.RawQuery)
+		}
+		w.Header().Set("Content-Type", "application/x-ndjson")
+		_, _ = w.Write([]byte(`{"after":2,"count":2,"events":[{"offset":1},{"offset":2}]}` + "\n"))
+		_, _ = w.Write([]byte(`{"after":2,"count":0,"events":[]}` + "\n"))
+		_, _ = w.Write([]byte(`{"done":true,"after":2}` + "\n"))
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pages [][]ChangeEvent
+	lastAfter, err := client.StreamAuditChanges(context.Background(), 0, func(page []ChangeEvent, nextAfter int64) bool {
+		pages = append(pages, page)
+		return true
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lastAfter != 2 || len(pages) != 1 || len(pages[0]) != 2 {
+		t.Fatalf("lastAfter=%d pages=%d first=%d", lastAfter, len(pages), len(pages[0]))
+	}
+}
