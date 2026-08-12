@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.51.0 – v0.61.0-beta
+
+- Cross-SDK method parity harness, get-relation contract, contributing guide
+- Snapshot policy exposed in verify response
+- 22 protocol adapters over the shared base contract; adapter conformance matrix in CI
+- Source-class docs, OpenAPI validation, release automation, prediction integration
+- Adapter architecture, conformance, threat-model, examples, and publish guides
+- Design-partner onboarding and beta status
+- All-modules check and adapter readiness note
+- Batch append contract across SDK languages
+- Batch reality view and source authority matrix contract
+- Structured error model (`detail`, `code`) in contract
+- Audit change stream as NDJSON with SDK consume parity; OpenAPI tag fixes
+
 ## v0.50.0
 
 - OpenAPI tag groups and compatibility notes

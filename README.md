@@ -72,6 +72,12 @@ Excluded (they live in the core or enterprise repositories):
 
 See `docs/repository-boundary.md`.
 
+## Status
+
+**Beta (v0.61.0-beta)**. Public contracts are drift-guarded against the core,
+Go/Python/TypeScript SDKs pass parity checks, and CI covers 32 protocol
+adapters over the shared base contract.
+
 ## Adapters
 
 | Adapter | Ingestion mode | Maps |
