@@ -125,6 +125,52 @@ test("APIError carries status and message", async () => {
   );
 });
 
+test("end-to-end warehouse flow", async () => {
+  const events: Array<Record<string, unknown>> = [];
+  const fake = createServer((request, response) => {
+    const path = decodeURIComponent((request.url ?? "").split("?")[0]);
+    const send = (status: number, value?: unknown) => {
+      const payload = JSON.stringify(value ?? {});
+      response.writeHead(status, { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(payload) });
+      response.end(payload);
+    };
+    if (request.method === "POST" && path === "/v1/twins") { send(201, { id: "robot:WH-17", type_ref: "robot", tenant_id: "acme" }); return; }
+    if (request.method === "POST" && path === "/v1/source-bindings") { send(201, { id: "b1", tenant_id: "acme" }); return; }
+    if (request.method === "POST" && path === "/v1/assertions") {
+      let body = "";
+      request.on("data", (chunk) => (body += chunk));
+      request.on("end", () => {
+        const parsed = JSON.parse(body) as Record<string, unknown>;
+        events.push({ offset: events.length + 1, tenant_id: "acme", kind: "state_assertion.appended", subject_id: parsed.subject_id, payload: parsed, occurred_at: "2026-08-11T10:00:00Z" });
+        send(201, { ...parsed, id: "a1", tenant_id: "acme", system_time: parsed.event_time });
+      });
+      return;
+    }
+    if (request.method === "GET" && path.startsWith("/v1/twins/robot:WH-17/state/health")) { send(200, { tenant_id: "acme", subject_id: "robot:WH-17", property: "health", status: "resolved", freshness: "fresh", resolution_policy: "p", value: "ready" }); return; }
+    if (request.method === "POST" && path.endsWith("/snapshots")) { send(201, { id: "snap-1", tenant_id: "acme", subject_id: "robot:WH-17", resolution_policy: "p", digest: "d1", states: [], relations: [], created_at: "2026-08-11T00:00:00Z" }); return; }
+    if (request.method === "GET" && path.includes("/verify")) { send(200, { valid: true }); return; }
+    if (request.method === "GET" && path === "/v1/changes") { send(200, { events }); return; }
+    send(404, { error: "not found" });
+  });
+  await new Promise<void>((resolve) => fake.listen(0, "127.0.0.1", resolve));
+  const address = fake.address() as { port: number };
+  try {
+    const client = new OntovelaClient({ baseUrl: `http://127.0.0.1:${address.port}`, tenantId: "acme" });
+    await client.createTwin({ id: "robot:WH-17", type_ref: "robot" });
+    const claim = await client.appendAssertion({ subject_id: "robot:WH-17", property: "health", value: "ready", state_kind: "observed", event_time: "2026-08-11T10:00:00Z", source: "sensor:health", evidence_ref: "e1" }, "k1");
+    assert.equal(claim.id, "a1");
+    const state = await client.resolveState("robot:WH-17", "health");
+    assert.equal(state.status, "resolved");
+    const snapshot = await client.createSnapshot("robot:WH-17");
+    assert.equal(snapshot.id, "snap-1");
+    assert.equal(await client.verifySnapshot("snap-1"), true);
+    const changeEvents = await client.listChanges();
+    assert.equal(changeEvents.length, 1);
+  } finally {
+    fake.close();
+  }
+});
+
 test("list and revoke source bindings", async () => {
   const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
   const bindings = await client.listSourceBindings("sensor:health");

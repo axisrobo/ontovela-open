@@ -3,6 +3,7 @@
 import json
 import sys
 import unittest
+import urllib.parse
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
@@ -52,6 +53,58 @@ class _Handler(BaseHTTPRequestHandler):
 
     def log_message(self, *args):  # suppress server logging
         pass
+
+
+class E2EHandler(BaseHTTPRequestHandler):
+    state = {"events": []}
+
+    def _path(self):
+        return urllib.parse.unquote(self.path).split("?")[0]
+
+    def do_POST(self):  # noqa: N802
+        self.path = self._path()
+        if self.path == "/v1/twins":
+            self._json(201, {"id": "robot:WH-17", "type_ref": "robot", "tenant_id": "acme"})
+            return
+        if self.path == "/v1/source-bindings":
+            self._json(201, {"id": "b1", "tenant_id": "acme"})
+            return
+        if self.path == "/v1/assertions":
+            length = int(self.headers.get("Content-Length", "0"))
+            body = json.loads(self.rfile.read(length) or b"{}")
+            body["id"] = "a1"
+            body["tenant_id"] = "acme"
+            self.state["events"].append({"offset": len(self.state["events"]) + 1, "tenant_id": "acme", "kind": "state_assertion.appended", "subject_id": "robot:WH-17", "payload": body, "occurred_at": "2026-08-11T10:00:00Z"})
+            self._json(201, body)
+            return
+        if "/snapshots" in self.path:
+            self._json(201, {"id": "snap-1", "tenant_id": "acme", "subject_id": "robot:WH-17", "resolution_policy": "p", "digest": "d1", "states": [], "relations": [], "created_at": "2026-08-11T00:00:00Z"})
+            return
+        self._json(404, {"error": "not found"})
+
+    def do_GET(self):  # noqa: N802
+        self.path = self._path()
+        if self.path.startswith("/v1/twins/robot:WH-17/state/health"):
+            self._json(200, {"tenant_id": "acme", "subject_id": "robot:WH-17", "property": "health", "status": "resolved", "freshness": "fresh", "resolution_policy": "p", "value": "ready"})
+            return
+        if self.path.startswith("/v1/twins/robot:WH-17/snapshots"):
+            self._json(200, {"id": "snap-1", "tenant_id": "acme", "subject_id": "robot:WH-17", "resolution_policy": "p", "digest": "d1", "states": [], "relations": [], "created_at": "2026-08-11T00:00:00Z"})
+            return
+        if "/verify" in self.path:
+            self._json(200, {"valid": True})
+            return
+        if self.path == "/v1/changes":
+            self._json(200, {"events": self.state["events"]})
+            return
+        self._json(404, {"error": "not found"})
+
+    def _json(self, status, value):
+        payload = json.dumps(value).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
 
 
 class ClientTest(unittest.TestCase):
@@ -308,6 +361,27 @@ class ClientTest(unittest.TestCase):
         )
         restored = ResolvedState(**json.loads(json.dumps(state.__dict__)))
         self.assertEqual(restored, state)
+
+
+    def test_end_to_end_warehouse_flow(self):
+        server = HTTPServer(("127.0.0.1", 0), E2EHandler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            client = Client(f"http://127.0.0.1:{server.server_port}", "acme")
+            twin = client.create_twin("robot:WH-17", "robot")
+            self.assertEqual(twin.id, "robot:WH-17")
+            claim = client.append_assertion(StateAssertion(subject_id="robot:WH-17", property="health", value="ready", state_kind="observed", event_time=datetime(2026, 8, 11, 10, 0, 0, tzinfo=timezone.utc), source="sensor:health", evidence_ref="e1"), idempotency_key="k1")
+            self.assertEqual(claim.id, "a1")
+            state = client.resolve_state("robot:WH-17", "health")
+            self.assertEqual(state.status, "resolved")
+            snapshot = client.create_snapshot("robot:WH-17")
+            self.assertEqual(snapshot.id, "snap-1")
+            self.assertTrue(client.verify_snapshot("snap-1"))
+            events = client.list_changes()
+            self.assertEqual(len(events), 1)
+        finally:
+            server.shutdown()
 
 
 if __name__ == "__main__":
