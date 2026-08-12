@@ -172,6 +172,25 @@ test("reportHeartbeat posts source", async () => {
   assert.equal(heartbeat.source, "sensor:health");
 });
 
+test("retries transient errors", async () => {
+  let attempts = 0;
+  const client = new OntovelaClient({
+    baseUrl,
+    tenantId: "acme",
+    maxRetries: 3,
+    fetch: async () => {
+      attempts++;
+      if (attempts < 3) {
+        return new Response(JSON.stringify({ error: "unavailable" }), { status: 503 });
+      }
+      return new Response(JSON.stringify({ status: "resolved" }), { status: 200 });
+    },
+  });
+  const state = await client.resolveState("twin-1", "health", { as_of: "2026-08-11T10:00:00Z" });
+  assert.equal(state.status, "resolved");
+  assert.equal(attempts, 3);
+});
+
 test("listTwinTypes parses packs", async () => {
   const client = new OntovelaClient({ baseUrl, tenantId: "acme" });
   const types = await client.listTwinTypes();

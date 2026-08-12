@@ -42,12 +42,14 @@ export interface OntovelaClientOptions {
   baseUrl: string;
   tenantId: string;
   fetch?: FetchLike;
+  maxRetries?: number;
 }
 
 export class OntovelaClient {
   private readonly baseUrl: string;
   private readonly tenantId: string;
   private readonly fetchFn: FetchLike;
+  private readonly maxRetries: number;
 
   constructor(options: OntovelaClientOptions) {
     if (!options.tenantId || !options.tenantId.trim()) {
@@ -56,6 +58,7 @@ export class OntovelaClient {
     this.baseUrl = options.baseUrl.replace(/\/$/, "");
     this.tenantId = options.tenantId;
     this.fetchFn = options.fetch ?? globalThis.fetch.bind(globalThis);
+    this.maxRetries = options.maxRetries ?? 0;
   }
 
   async reportHeartbeat(source: string): Promise<import("./models").SourceHeartbeat> {
@@ -255,17 +258,29 @@ export class OntovelaClient {
     if (options.idempotencyKey) {
       headers["Idempotency-Key"] = options.idempotencyKey;
     }
-    const response = await this.fetchFn(url, { method, headers, body });
-    const raw = await response.text();
-    if (!response.ok) {
-      let message = "";
-      try {
-        message = (JSON.parse(raw) as { error?: string }).error ?? "";
-      } catch {
-        message = "";
+    let response: Response;
+    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      response = await this.fetchFn(url, { method, headers, body });
+      if (response.ok || !this.retryable(response.status) || attempt === this.maxRetries) {
+        const raw = await response.text();
+        if (!response.ok) {
+          let message = "";
+          try {
+            message = (JSON.parse(raw) as { error?: string }).error ?? "";
+          } catch {
+            message = "";
+          }
+          throw new APIError(response.status, message);
+        }
+        return raw ? (JSON.parse(raw) as T) : (undefined as T);
       }
-      throw new APIError(response.status, message);
+      await response.text();
+      await new Promise((resolve) => setTimeout(resolve, 100 * 2 ** attempt));
     }
-    return raw ? (JSON.parse(raw) as T) : (undefined as T);
+    throw new APIError(500, "retry exhausted");
+  }
+
+  private retryable(status: number): boolean {
+    return status === 429 || status >= 500;
   }
 }
