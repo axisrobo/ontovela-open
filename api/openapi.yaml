@@ -577,4 +577,4 @@ components:
       type: object
       required: [tenant_id, twin_id, property, real_state, simulated_state, delta]
       properties: { tenant_id: { type: string }, twin_id: { type: string }, property: { type: string }, real_state: { $ref: '#/components/schemas/ResolvedState' }, simulated_state: { $ref: '#/components/schemas/ResolvedState' }, delta: { type: string, enum: [match, diverges, unknown] } }
-    Error: { type: object, required: [error], properties: { error: { type: string } } }
+    Error: { type: object, required: [error], properties: { error: { type: string }, detail: { type: string }, code: { type: string, enum: [not_found, already_exists, offset_rewind, invalid_request, internal] } } }
