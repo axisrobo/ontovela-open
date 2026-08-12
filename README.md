@@ -86,6 +86,28 @@ See `docs/repository-boundary.md`.
 | `ros2` | push (ROS 2) | robot state to assertions |
 | `opcua` | push (OPC UA) | quality-gated node reads |
 | `prediction` | pull (model) | predictions as `predicted` assertions |
+| `amqp` / `amqp1` | push (AMQP) | broker messages to assertions |
+| `coap` | push (CoAP) | constrained-node messages to assertions |
+| `grpc` | push (gRPC) | stream messages to assertions |
+| `websocket` / `sse` / `longpoll` | push (HTTP) | realtime and long-poll messages to assertions |
+| `modbus` | pull/push (Modbus TCP) | register values to assertions |
+| `can` | push (CAN bus) | frame data to assertions |
+| `bacnet` | push (BACnet) | building-automation objects to assertions |
+| `lorawan` | push (LoRaWAN) | uplinks to assertions |
+| `ble` | push (BLE) | beacon data to assertions |
+| `stomp` | push (STOMP) | broker messages to assertions |
+| `zeromq` | push (ZeroMQ) | messages to assertions |
+| `redis` | push (Redis Streams) | stream entries to assertions |
+| `csv` | pull (file) | CSV records to assertions |
+| `graphql` | push (GraphQL) | subscription payloads to assertions |
+| `ethernetip` / `profinet` | push (industrial Ethernet) | PLC values to assertions |
+| `mqttsn` | push (MQTT-SN) | sensor-network messages to assertions |
+| `snmp` | pull (SNMP) | OID values to assertions |
+| `dds` | push (DDS) | data-centric topic samples to assertions |
+
+All protocol adapters share the `adapters/base` payload contract and preserve
+tenant scope, idempotency, source bindings, evidence references, and state-kind
+integrity.
 
 ## SDK Coverage Matrix
 
