@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -56,12 +57,13 @@ def _prune(value: Any) -> Any:
 class Client:
     """Tenant-scoped ONTOVELA client. Safe to reuse across requests."""
 
-    def __init__(self, base_url: str, tenant_id: str, timeout: int = 30):
+    def __init__(self, base_url: str, tenant_id: str, timeout: int = 30, max_retries: int = 0):
         if not tenant_id or not tenant_id.strip():
             raise ValueError("tenant_id is required")
         self.base_url = base_url.rstrip("/")
         self.tenant_id = tenant_id
         self.timeout = timeout
+        self.max_retries = max_retries
 
     def list_twin_types(self) -> list:
         body = self._request("GET", "/v1/twin-types")
@@ -245,20 +247,25 @@ class Client:
         if body is not None:
             payload = json.dumps(body).encode("utf-8")
             request.add_header("Content-Type", "application/json")
-        try:
-            with urllib.request.urlopen(request, data=payload, timeout=self.timeout) as response:
-                raw = response.read()
-                if not raw:
-                    return None
-                value = json.loads(raw.decode("utf-8"))
-        except urllib.error.HTTPError as error:
-            message = ""
+        value = None
+        for attempt in range(self.max_retries + 1):
             try:
-                message = json.loads(error.read().decode("utf-8")).get("error", "")
-            except Exception:
-                pass
-            raise APIError(error.code, message) from None
-        if model is not None:
+                with urllib.request.urlopen(request, data=payload, timeout=self.timeout) as response:
+                    raw = response.read()
+                    if not raw:
+                        return None
+                    value = json.loads(raw.decode("utf-8"))
+                    break
+            except urllib.error.HTTPError as error:
+                message = ""
+                try:
+                    message = json.loads(error.read().decode("utf-8")).get("error", "")
+                except Exception:
+                    pass
+                if error.code != 429 and error.code < 500 or attempt >= self.max_retries:
+                    raise APIError(error.code, message) from None
+                time.sleep(0.1 * (2 ** attempt))
+        if model is not None and value is not None:
             return model(**value)
         return value
 

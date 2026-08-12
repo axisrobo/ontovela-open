@@ -194,6 +194,26 @@ class ClientTest(unittest.TestCase):
         finally:
             handler.do_POST = original_do_post
 
+    def test_retry_on_transient_errors(self):
+        counter = {"n": 0}
+        original_do_get = _Handler.do_GET
+
+        def patched(self):
+            counter["n"] += 1
+            if counter["n"] < 3:
+                self._json(503, {"error": "unavailable"})
+                return
+            original_do_get(self)
+
+        _Handler.do_GET = patched
+        try:
+            client = Client(self.base_url, "acme", max_retries=3)
+            state = client.resolve_state("twin-1", "health", as_of=datetime(2026, 8, 11, 10, 0, 0, tzinfo=timezone.utc), as_known=datetime(2026, 8, 11, 10, 0, 0, tzinfo=timezone.utc))
+            self.assertEqual(state.status, "resolved")
+            self.assertEqual(counter["n"], 3)
+        finally:
+            _Handler.do_GET = original_do_get
+
     def test_list_snapshots_parses_list(self):
         handler = _Handler
         original_do_get = handler.do_GET
