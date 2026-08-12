@@ -100,6 +100,30 @@ func (c *Client) GetRelation(ctx context.Context, relationID string) (RelationAs
 	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/relations", relationID), nil, nil, "", &result)
 }
 
+func (c *Client) AppendAssertions(ctx context.Context, assertions []StateAssertionInput) ([]StateAssertion, error) {
+	var result struct {
+		Assertions []StateAssertion `json:"assertions"`
+	}
+	if err := c.doJSON(ctx, http.MethodPost, "/v1/assertions/batch", nil, struct {
+		Assertions []StateAssertionInput `json:"assertions"`
+	}{Assertions: assertions}, "", &result); err != nil {
+		return nil, err
+	}
+	return result.Assertions, nil
+}
+
+func (c *Client) AppendRelations(ctx context.Context, relations []RelationAssertionInput) ([]RelationAssertion, error) {
+	var result struct {
+		Relations []RelationAssertion `json:"relations"`
+	}
+	if err := c.doJSON(ctx, http.MethodPost, "/v1/relations/batch", nil, struct {
+		Relations []RelationAssertionInput `json:"relations"`
+	}{Relations: relations}, "", &result); err != nil {
+		return nil, err
+	}
+	return result.Relations, nil
+}
+
 func (c *Client) GetAssertion(ctx context.Context, assertionID string) (StateAssertion, error) {
 	var result StateAssertion
 	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/assertions", assertionID), nil, nil, "", &result)

@@ -91,6 +91,14 @@ class Client:
     def create_source_binding(self, payload: SourceBinding) -> SourceBinding:
         return self._post("/v1/source-bindings", to_dict(payload), SourceBinding)
 
+    def append_assertions(self, assertions: list) -> list:
+        body = self._request("POST", "/v1/assertions/batch", body={"assertions": [_prune(self._assertion_dict(item)) for item in assertions]})
+        return [StateAssertion(**item) for item in body.get("assertions", [])]
+
+    def append_relations(self, relations: list) -> list:
+        body = self._request("POST", "/v1/relations/batch", body={"relations": [_prune(self._relation_dict(item)) for item in relations]})
+        return [RelationAssertion(**item) for item in body.get("relations", [])]
+
     def get_assertion(self, assertion_id: str) -> StateAssertion:
         return self._request("GET", f"/v1/assertions/{urllib.parse.quote(assertion_id, safe='')}", model=StateAssertion)
 

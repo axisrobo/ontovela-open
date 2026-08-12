@@ -239,6 +239,31 @@ func TestRetryWithBackoffOnTransientErrors(t *testing.T) {
 	}
 }
 
+func TestAppendAssertionsBatch(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/assertions/batch" {
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+		var payload struct {
+			Assertions []StateAssertionInput `json:"assertions"`
+		}
+		_ = json.NewDecoder(r.Body).Decode(&payload)
+		if len(payload.Assertions) != 2 {
+			t.Fatalf("assertions = %d", len(payload.Assertions))
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"assertions": []StateAssertion{{ID: "a1"}, {ID: "a2"}}})
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	claims, err := client.AppendAssertions(context.Background(), []StateAssertionInput{{SubjectID: "robot:WH-17", Property: "health"}, {SubjectID: "robot:WH-17", Property: "status"}})
+	if err != nil || len(claims) != 2 || claims[1].ID != "a2" {
+		t.Fatalf("claims=%#v err=%v", claims, err)
+	}
+}
+
 func TestGetRelationByID(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/relations/r1" {
