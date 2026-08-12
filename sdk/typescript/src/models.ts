@@ -205,6 +205,13 @@ export interface CausalLink {
   evidence_ref: string;
 }
 
+export interface SourceAuthority {
+  source: string;
+  property: string;
+  authority_rank: number;
+  principal_ref?: string;
+}
+
 export interface ImpactPath {
   subject_id: string;
   depth: number;

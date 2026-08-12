@@ -314,6 +314,39 @@ func (c *Client) CreateRealityView(ctx context.Context, input RealityViewRequest
 	return result, c.doJSON(ctx, http.MethodPost, "/v1/reality-views", temporal.values(), input, "", &result)
 }
 
+// CreateRealityViewsBatch evaluates the same requirements for multiple twins.
+func (c *Client) CreateRealityViewsBatch(ctx context.Context, purpose string, requiredState []RequiredState, twinIDs []string, temporal TemporalQuery) ([]RealityView, error) {
+	var result struct {
+		Views []RealityView `json:"views"`
+	}
+	request := RealityViewRequest{Purpose: purpose, RequiredState: requiredState, TwinIDs: twinIDs}
+	if err := c.doJSON(ctx, http.MethodPost, "/v1/reality-views", temporal.values(), request, "", &result); err != nil {
+		return nil, err
+	}
+	return result.Views, nil
+}
+
+type SourceAuthority struct {
+	Source        string `json:"source"`
+	Property      string `json:"property"`
+	AuthorityRank int    `json:"authority_rank"`
+	PrincipalRef  string `json:"principal_ref,omitempty"`
+}
+
+func (c *Client) ListSourceAuthorities(ctx context.Context, property string) ([]SourceAuthority, error) {
+	query := make(url.Values)
+	if property != "" {
+		query.Set("property", property)
+	}
+	var result struct {
+		Authorities []SourceAuthority `json:"authorities"`
+	}
+	if err := c.doJSON(ctx, http.MethodGet, "/v1/source-bindings/authority", query, nil, "", &result); err != nil {
+		return nil, err
+	}
+	return result.Authorities, nil
+}
+
 func (c *Client) AuditExportChanges(ctx context.Context, after int64, limit int) ([]ChangeEvent, error) {
 	query := url.Values{"after": []string{strconv.FormatInt(after, 10)}, "limit": []string{strconv.Itoa(limit)}}
 	var result struct {

@@ -264,6 +264,40 @@ func TestAppendAssertionsBatch(t *testing.T) {
 	}
 }
 
+func TestBatchRealityViewAndAuthorityMatrix(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/v1/reality-views" && r.Method == http.MethodPost:
+			var payload RealityViewRequest
+			_ = json.NewDecoder(r.Body).Decode(&payload)
+			if len(payload.TwinIDs) != 2 {
+				t.Fatalf("twin_ids = %d", len(payload.TwinIDs))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"views": []RealityView{{TwinID: "a"}, {TwinID: "b"}}})
+		case r.URL.Path == "/v1/source-bindings/authority" && r.Method == http.MethodGet:
+			if r.URL.Query().Get("property") != "health" {
+				t.Fatalf("query = %s", r.URL.RawQuery)
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"authorities": []SourceAuthority{{Source: "sensor:health", Property: "health", AuthorityRank: 10}}})
+		default:
+			t.Fatalf("path=%s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	views, err := client.CreateRealityViewsBatch(context.Background(), "dispatch", []RequiredState{{Property: "health", MaxAgeSeconds: 60}}, []string{"a", "b"}, TemporalQuery{})
+	if err != nil || len(views) != 2 {
+		t.Fatalf("views=%#v err=%v", views, err)
+	}
+	authorities, err := client.ListSourceAuthorities(context.Background(), "health")
+	if err != nil || len(authorities) != 1 || authorities[0].AuthorityRank != 10 {
+		t.Fatalf("authorities=%#v err=%v", authorities, err)
+	}
+}
+
 func TestGetRelationByID(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/relations/r1" {

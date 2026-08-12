@@ -130,6 +130,15 @@ class Client:
             model=ResolvedState,
         )
 
+    def create_reality_views_batch(self, purpose: str, required_state: list, twin_ids: list, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None) -> list:
+        query = _query(as_of=to_iso(as_of), as_known=to_iso(as_known))
+        raw = self._request("POST", "/v1/reality-views", query=query, body={"purpose": purpose, "required_state": required_state, "twin_ids": twin_ids})
+        return [self._reality_view(item) for item in raw.get("views", [])]
+
+    def list_source_authorities(self, property: Optional[str] = None) -> list:
+        body = self._request("GET", "/v1/source-bindings/authority", query=_query(property=property))
+        return body.get("authorities", [])
+
     def create_reality_view(self, payload: RealityViewRequest, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None) -> RealityView:
         body = to_dict(payload)
         body["required_state"] = [to_dict(item) for item in payload.required_state]

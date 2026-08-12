@@ -65,6 +65,16 @@ paths:
       responses:
         '204': { description: Deleted }
         '404': { $ref: '#/components/responses/NotFound' }
+  /v1/source-bindings/authority:
+    get:
+      summary: List source authority matrix for a tenant
+      operationId: listSourceAuthorities
+      parameters:
+        - name: property
+          in: query
+          schema: { type: string }
+      responses:
+        '200': { description: Authority matrix, content: { application/json: { schema: { type: object, required: [authorities], properties: { authorities: { type: array, items: { type: object, required: [source, property, authority_rank], properties: { source: { type: string }, property: { type: string }, authority_rank: { type: integer }, principal_ref: { type: string } } } } } } } } }
   /v1/source-bindings/{id}:
     delete:
       summary: Revoke a source binding

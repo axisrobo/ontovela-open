@@ -174,6 +174,18 @@ export class OntovelaClient {
     return this.request<RealityView>("POST", "/v1/reality-views", { body: input, query: this.temporalQuery({}, temporal) });
   }
 
+  async createRealityViewsBatch(purpose: string, requiredState: import("./models").RequiredState[], twinIDs: string[], temporal?: TemporalQuery): Promise<RealityView[]> {
+    const body = await this.request<{ views: RealityView[] }>("POST", "/v1/reality-views", { body: { purpose, required_state: requiredState, twin_ids: twinIDs }, query: this.temporalQuery({}, temporal) });
+    return body.views;
+  }
+
+  async listSourceAuthorities(property?: string): Promise<import("./models").SourceAuthority[]> {
+    const query: Record<string, string> = {};
+    if (property !== undefined) query.property = property;
+    const body = await this.request<{ authorities: import("./models").SourceAuthority[] }>("GET", "/v1/source-bindings/authority", { query });
+    return body.authorities;
+  }
+
   async listSnapshots(twinId: string, limit = 100): Promise<Snapshot[]> {
     const body = await this.request<{ snapshots: Snapshot[] }>("GET", `/v1/twins/${encodeURIComponent(twinId)}/snapshots`, { query: { limit: String(limit) } });
     return body.snapshots;
