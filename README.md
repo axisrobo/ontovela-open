@@ -25,6 +25,21 @@ Excluded:
 
 See `docs/repository-boundary.md`.
 
+## Adapters
+
+| Adapter | Ingestion mode | Maps |
+| --- | --- | --- |
+| `harmovela` | pull (evidence) | `harmovela:event/<id>` evidence validation |
+| `httpwebhook` | push (HTTP) | webhook bodies to assertions |
+| `stream` | push (Kafka/NATS) | broker messages to assertions |
+| `sqlrest` | pull (SQL/REST) | changed rows to assertions |
+| `edge` | local buffer | offline spool with JSONL persistence |
+| `effect` | push (executor) | EffectRecords to assertions |
+| `mqtt` | push (MQTT) | topic messages to assertions |
+| `ros2` | push (ROS 2) | robot state to assertions |
+| `opcua` | push (OPC UA) | quality-gated node reads |
+| `prediction` | pull (model) | predictions as `predicted` assertions |
+
 ## SDK Coverage Matrix
 
 | Endpoint family | Go | Python | TypeScript |

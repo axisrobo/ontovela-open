@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -77,6 +78,22 @@ func TestFailedFlushRetainsItems(t *testing.T) {
 	}
 	if spool.Len() != 0 {
 		t.Fatalf("spool not cleared after recovery, len = %d", spool.Len())
+	}
+}
+
+func TestFileSpoolSurvivesReload(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "spool.jsonl")
+	spool, err := NewFileSpool(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first := spool.Append(item("k1"))
+	reloaded, err := NewFileSpool(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reloaded.Len() != 1 || reloaded.items[0].Sequence != first {
+		t.Fatalf("reloaded spool = %#v", reloaded.items)
 	}
 }
 

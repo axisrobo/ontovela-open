@@ -5,6 +5,8 @@ package edge
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -33,6 +35,57 @@ type Spool struct {
 }
 
 func New() *Spool { return &Spool{nextSeq: 1} }
+
+// FileSpool persists items to a JSONL file so they survive process restarts.
+type FileSpool struct {
+	Spool
+	path string
+}
+
+// NewFileSpool loads existing items from path and returns a durable spool.
+func NewFileSpool(path string) (*FileSpool, error) {
+	spool := &FileSpool{path: path}
+	spool.nextSeq = 1
+	data, err := os.ReadFile(path)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, err
+	}
+	for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		var item Item
+		if err := json.Unmarshal([]byte(line), &item); err != nil {
+			return nil, err
+		}
+		spool.items = append(spool.items, item)
+		if item.Sequence >= spool.nextSeq {
+			spool.nextSeq = item.Sequence + 1
+		}
+	}
+	return spool, nil
+}
+
+// Append buffers and appends the item to the JSONL file.
+func (f *FileSpool) Append(item Item) int64 {
+	sequence := f.Spool.Append(item)
+	item.Sequence = sequence
+	line, err := json.Marshal(item)
+	if err == nil {
+		_ = appendLine(f.path, line)
+	}
+	return sequence
+}
+
+func appendLine(path string, line []byte) error {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	_, err = file.Write(append(line, '\n'))
+	return err
+}
 
 // Append buffers an item locally without requiring connectivity.
 func (s *Spool) Append(item Item) int64 {
