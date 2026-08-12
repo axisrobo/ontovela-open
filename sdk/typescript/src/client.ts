@@ -165,8 +165,15 @@ export class OntovelaClient {
     return body.snapshots;
   }
 
-  async createSnapshot(twinId: string, temporal?: TemporalQuery): Promise<Snapshot> {
-    return this.request<Snapshot>("POST", `/v1/twins/${encodeURIComponent(twinId)}/snapshots`, { query: this.temporalQuery({}, temporal) });
+  async createSnapshot(twinId: string, temporal?: TemporalQuery, includeRelations = true): Promise<Snapshot> {
+    const query: Record<string, string> = {};
+    if (!includeRelations) query.include_relations = "false";
+    Object.assign(query, this.temporalQuery({}, temporal));
+    return this.request<Snapshot>("POST", `/v1/twins/${encodeURIComponent(twinId)}/snapshots`, { query });
+  }
+
+  async latestClaim(twinId: string, property: string): Promise<StateAssertion> {
+    return this.request<StateAssertion>("GET", `/v1/twins/${encodeURIComponent(twinId)}/latest/${encodeURIComponent(property)}`);
   }
 
   async getSnapshot(snapshotId: string): Promise<Snapshot> {

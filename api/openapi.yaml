@@ -271,6 +271,16 @@ paths:
       parameters: [ { $ref: '#/components/parameters/TwinID' } ]
       responses:
         '200': { description: Causal analytics, content: { application/json: { schema: { $ref: '#/components/schemas/CausalAnalytics' } } } }
+  /v1/twins/{id}/latest/{property}:
+    get:
+      summary: Read the latest event-time claim for a property
+      operationId: latestClaim
+      parameters:
+        - $ref: '#/components/parameters/TwinID'
+        - $ref: '#/components/parameters/PropertyPath'
+      responses:
+        '200': { description: Latest claim, content: { application/json: { schema: { $ref: '#/components/schemas/StateAssertion' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
   /v1/twins/{id}/sim-to-real/{property}:
     get:
       summary: Compare real and simulated resolved state for a property
@@ -319,6 +329,9 @@ paths:
       operationId: createSnapshot
       parameters:
         - $ref: '#/components/parameters/TwinID'
+        - name: include_relations
+          in: query
+          schema: { type: boolean, default: true }
         - $ref: '#/components/parameters/AsOf'
         - $ref: '#/components/parameters/AsKnown'
       responses:

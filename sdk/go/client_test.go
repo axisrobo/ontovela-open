@@ -239,6 +239,35 @@ func TestRetryWithBackoffOnTransientErrors(t *testing.T) {
 	}
 }
 
+func TestLatestClaimAndSnapshotScope(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/v1/twins/robot:wh-17/latest/health":
+			_ = json.NewEncoder(w).Encode(StateAssertion{StateAssertionInput: StateAssertionInput{Property: "health"}, ID: "a1"})
+		case r.URL.Path == "/v1/twins/robot:wh-17/snapshots":
+			if r.URL.Query().Get("include_relations") != "false" {
+				t.Fatalf("include_relations = %q", r.URL.Query().Get("include_relations"))
+			}
+			_ = json.NewEncoder(w).Encode(Snapshot{ID: "snap-1", Relations: nil})
+		default:
+			t.Fatalf("path = %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+	client, err := NewClient(server.URL, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	claim, err := client.LatestClaim(context.Background(), "robot:wh-17", "health")
+	if err != nil || claim.Property != "health" {
+		t.Fatalf("claim=%#v err=%v", claim, err)
+	}
+	snapshot, err := client.CreateSnapshotScoped(context.Background(), "robot:wh-17", false, TemporalQuery{})
+	if err != nil || snapshot.ID != "snap-1" {
+		t.Fatalf("snapshot=%#v err=%v", snapshot, err)
+	}
+}
+
 func TestGetAssertionByID(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/assertions/a1" {

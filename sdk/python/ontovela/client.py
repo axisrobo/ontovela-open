@@ -130,9 +130,14 @@ class Client:
         body = self._request("GET", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/snapshots", query=_query(limit=limit))
         return [Snapshot(**item) for item in body.get("snapshots", [])]
 
-    def create_snapshot(self, twin_id: str, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None) -> Snapshot:
+    def create_snapshot(self, twin_id: str, as_of: Optional[datetime] = None, as_known: Optional[datetime] = None, include_relations: bool = True) -> Snapshot:
         query = _query(as_of=to_iso(as_of), as_known=to_iso(as_known))
+        if not include_relations:
+            query["include_relations"] = "false"
         return self._request("POST", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/snapshots", query=query, model=Snapshot)
+
+    def latest_claim(self, twin_id: str, property: str) -> StateAssertion:
+        return self._request("GET", f"/v1/twins/{urllib.parse.quote(twin_id, safe='')}/latest/{urllib.parse.quote(property, safe='')}", model=StateAssertion)
 
     def get_snapshot(self, snapshot_id: str) -> Snapshot:
         return self._request("GET", f"/v1/snapshots/{urllib.parse.quote(snapshot_id, safe='')}", model=Snapshot)

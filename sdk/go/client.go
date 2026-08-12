@@ -154,8 +154,21 @@ func (c *Client) ListSnapshots(ctx context.Context, twinID string, limit int) ([
 }
 
 func (c *Client) CreateSnapshot(ctx context.Context, twinID string, temporal TemporalQuery) (Snapshot, error) {
+	return c.CreateSnapshotScoped(ctx, twinID, true, temporal)
+}
+
+func (c *Client) CreateSnapshotScoped(ctx context.Context, twinID string, includeRelations bool, temporal TemporalQuery) (Snapshot, error) {
+	query := temporal.values()
+	if !includeRelations {
+		query.Set("include_relations", "false")
+	}
 	var result Snapshot
-	return result, c.doJSON(ctx, http.MethodPost, path.Join("/v1/twins", twinID, "snapshots"), temporal.values(), nil, "", &result)
+	return result, c.doJSON(ctx, http.MethodPost, path.Join("/v1/twins", twinID, "snapshots"), query, nil, "", &result)
+}
+
+func (c *Client) LatestClaim(ctx context.Context, twinID, property string) (StateAssertion, error) {
+	var result StateAssertion
+	return result, c.doJSON(ctx, http.MethodGet, path.Join("/v1/twins", twinID, "latest", property), nil, nil, "", &result)
 }
 
 func (c *Client) GetSnapshot(ctx context.Context, snapshotID string) (Snapshot, error) {
