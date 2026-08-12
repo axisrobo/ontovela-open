@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        adapter: [harmovela, prediction, httpwebhook, stream, sqlrest, edge, effect, mqtt, ros2, opcua]
+        adapter: [harmovela, prediction, httpwebhook, stream, sqlrest, edge, effect, mqtt, ros2, opcua, base, amqp, amqp1, coap, grpc, websocket, sse, modbus, can, bacnet, lorawan, ble, stomp, zeromq, redis, csv, graphql, ethernetip, profinet, mqttsn, longpoll, snmp, dds]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
