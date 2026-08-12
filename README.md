@@ -1,12 +1,59 @@
-# ONTOVELA Open
+# ONTOVELA
 
 English | [简体中文](README.zh-CN.md)
 
-Apache-2.0 licensed public developer surface for [ONTOVELA](https://github.com/axisrobo/ONTOVELA), the Digital Enterprise Twin and Operational World Model Platform.
+**Digital Enterprise Twin & Operational World Model Platform**
 
-This repository is the public adoption path: stable API contracts, Go/Python/TypeScript SDKs, examples, reference adapters, local developer binaries, documentation, and interoperability test fixtures.
+ONTOVELA fuses physical, digital, organizational, process, agent, and robot
+state into an evidence-bearing temporal graph for planning, simulation,
+intervention, and closed-loop autonomy.
 
-## Scope
+## What ONTOVELA Solves
+
+Autonomous and enterprise systems currently act on scattered, stale, or
+unverifiable "latest values". A planner cannot tell an observation from an
+inference, a prediction from a simulation, or an older fact from a newer one.
+ONTOVELA makes enterprise reality **computable** — queryable, reconstructable,
+and decision-ready — while preserving the distinction between what was
+observed, what was inferred, what is predicted, and what exists only in
+simulation.
+
+It replaces fragmented IoT dashboards, CMDBs, knowledge graphs, and private
+agent state with one authoritative operational-world plane that planners,
+executors, robots, and human governors can all trust.
+
+## Key Features
+
+- **Evidence-first state**: every claim carries a source, evidence reference,
+  event time, system time, state kind, and confidence.
+- **Six state kinds, strictly separated**: `observed`, `reported`, `derived`,
+  `inferred`, `predicted`, and `simulated` never conflate; `simulated` state
+  can never resolve into real operational state.
+- **Bitemporal history**: `as_of` (event time) and `as_known` (system time)
+  reconstruct what happened and what the system knew at any point.
+- **Explainable resolution**: authority-ranked resolution with explicit
+  `unknown` / `conflicted` outcomes — never a silent overwrite.
+- **Purpose-bound Reality Views**: planners request only the state they need,
+  with per-property freshness gates and source-liveness (heartbeat) checks.
+- **Signed snapshots**: immutable, verifiable reality slices for audit, plans,
+  and PEIRAVELA simulation branches, with diff and policy-change detection.
+- **Impact, causal lineage, and analytics**: traverse dependencies and only
+  `causes` relations for impact and causal reasoning.
+- **Sim-to-real comparison**: compare real resolved state with a simulated
+  branch without contamination.
+- **Durable subscriptions**: change feeds, consumer offsets, subscription
+  definitions, filters, and audit export.
+- **Source accountability**: tenant-scoped, source-bound, idempotent writes
+  with optional authenticated source principals.
+- **Go backend, PostgreSQL persistence**: append-only bitemporal ledger with
+  embedded migrations.
+
+## This Repository: ONTOVELA Open
+
+Apache-2.0 licensed public developer surface for
+[ONTOVELA](https://github.com/axisrobo/ONTOVELA) — the public adoption path with
+stable API contracts, SDKs, examples, reference adapters, and local developer
+binaries.
 
 Included:
 
@@ -14,10 +61,10 @@ Included:
 - Go, Python, and TypeScript SDKs
 - Local developer binary and Docker quickstart
 - Examples for assertions, temporal query, snapshot, subscriptions, and Reality Views
-- HTTP/webhook, Kafka/NATS, SQL/REST, and Harmovela reference adapters
+- HTTP/webhook, Kafka/NATS, SQL/REST, MQTT, ROS 2, OPC UA, and Harmovela reference adapters
 - Contract compatibility and Reality Integrity fixtures
 
-Excluded:
+Excluded (they live in the core or enterprise repositories):
 
 - The ONTOVELA temporal state kernel and reconciliation implementation
 - Multi-tenant control plane, cross-region federation, HA, and commercial connectors
@@ -56,23 +103,10 @@ See `docs/repository-boundary.md`.
 
 Parity is enforced by `contract/` drift guards.
 
-## v0.1 Contract
+## Quickstart and Contract
 
 - OpenAPI: `api/openapi.yaml`
-- Example: `examples/warehouse-robot.md`
-- Compatibility policy: `docs/compatibility.md`
-- Go SDK: `sdk/go/`
-- Python SDK: `sdk/python/`
-- TypeScript SDK: `sdk/typescript/`
-- Harmovela evidence adapter: `adapters/harmovela/`
-- Prediction adapter: `adapters/prediction/`
-- HTTP/webhook adapter: `adapters/httpwebhook/`
-- Stream ingest adapter (Kafka/NATS): `adapters/stream/`
-- SQL/REST polling adapter: `adapters/sqlrest/`
-- Edge spool adapter: `adapters/edge/`
-- Executor effect adapter: `adapters/effect/`
-- MQTT adapter: `adapters/mqtt/`
-- ROS 2 adapter: `adapters/ros2/`
-- OPC UA adapter: `adapters/opcua/`
 - Quickstart: `docs/quickstart.md`
+- Compatibility policy: `docs/compatibility.md`
 - Reference scenarios: `examples/warehouse-robot.md`, `examples/incident-response.md`, `examples/supply-chain-counterfactual.md`
+- Releases: tagged GitHub releases include the packaged developer binary for Windows.
