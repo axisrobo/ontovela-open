@@ -19,6 +19,7 @@ jobs:
         shell: pwsh
         env:
           ONTOVELA_VERSION: ${{ github.ref_name }}
+          LD_FLAGS: -X main.buildVersion=${{ github.ref_name }}
         run: |
           .\scripts\package.ps1
       - name: Create release with binary

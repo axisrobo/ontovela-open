@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.62.0-beta
+## v0.62.0
 
 - Version-alignment tag with core/EE v0.62.0-beta; no new public-contract changes (contract drift guard remains green)
 
