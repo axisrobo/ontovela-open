@@ -45,11 +45,11 @@ func TestLiveOrchadynRealityViewConsumption(t *testing.T) {
 // verifiable snapshot and keeps the simulated branch from the real state view.
 func TestLivePeiravelaSignedSnapshotConsumption(t *testing.T) {
 	client := liveClient(t)
-	seedTwin(t, client, "robot:peiravela-1", "health", "sensor:health", 30)
+	seedTwin(t, client, "robot:peiravela-1", "health", "peiravela:sensor", 30)
 	if _, err := client.AppendAssertion(context.Background(), ontovela.StateAssertionInput{
 		SubjectID: "robot:peiravela-1", Property: "health", Value: json.RawMessage(`"ready"`),
 		StateKind: ontovela.Observed, EventTime: time.Now().UTC(),
-		Source: "sensor:health", EvidenceRef: "sensor/1",
+		Source: "peiravela:sensor", EvidenceRef: "sensor/1",
 	}, "k-peiravela-1"); err != nil {
 		t.Fatalf("append observed: %v", err)
 	}
@@ -68,7 +68,13 @@ func TestLivePeiravelaSignedSnapshotConsumption(t *testing.T) {
 	if !valid {
 		t.Fatalf("snapshot %s invalid", snapshot.ID)
 	}
-	// A simulated branch diverges from the observed real state.
+	// A simulated branch diverges from the observed real state. The simulated
+	// source needs its own binding (source+property is unique per tenant).
+	if _, err := client.CreateSourceBinding(context.Background(), ontovela.SourceBindingInput{
+		ID: "b-peiravela-sim", Source: "peiravela:branch-1", Property: "health", AuthorityRank: 15, MaxLagSeconds: 600,
+	}); err != nil {
+		t.Fatalf("create simulated binding: %v", err)
+	}
 	if _, err := client.AppendAssertion(context.Background(), ontovela.StateAssertionInput{
 		SubjectID: "robot:peiravela-1", Property: "health", Value: json.RawMessage(`"failed"`),
 		StateKind: ontovela.Simulated, EventTime: time.Now().UTC(),
