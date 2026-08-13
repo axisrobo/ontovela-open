@@ -13,3 +13,4 @@ Use Superpowers workflows for non-trivial design, planning, test-driven implemen
 - Run `GOWORK=off go test ./...` in each Go module, `python -m unittest tests.test_client -v` in `sdk/python`, and `npm test` in `sdk/typescript` before reporting a completed change.
 - Tenant scope, idempotency keys, source bindings, and evidence references are integrity invariants in examples and adapters.
 - Keep the public surface Apache-2.0; never copy enterprise-only code into this repository.
+- Version & release: tag the same `v<major>.<minor>.<patch>` number as core/EE (no pre-release suffix); public contract changes land here first and the `contract/` drift guard must remain green before tagging.
