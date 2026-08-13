@@ -4,7 +4,7 @@
 # Usage:
 #   .\scripts\run-live-core.ps1 [-PgDsn <dsn>] [-Addr <host:port>] [-CoreDir <core-backend-path>]
 param(
-    [string]$PgDsn = "postgres://ontovela:ontovela@localhost:5432/ontovela?sslmode=disable",
+    [ValidateNotNullOrEmpty()][string]$PgDsn = "postgres://ontovela:ontovela@localhost:5432/ontovela?sslmode=disable",
     [string]$Addr = ":8080",
     [string]$CoreDir = (Join-Path $PSScriptRoot "..\..\ONTOVELA\backend")
 )
@@ -17,7 +17,13 @@ if (-not (Test-Path (Join-Path $CoreDir "go.mod"))) {
     exit 1
 }
 
+if (-not (Get-Command go -ErrorAction SilentlyContinue)) {
+    Write-Error "go is not on PATH; install Go 1.25+"
+    exit 1
+}
+
 Write-Host "== ONTOVELA live core =="
+# Local-dev only: the DSN (with credentials) is echoed here.
 Write-Host "DSN:      $PgDsn"
 Write-Host "Addr:     $Addr"
 Write-Host "Core dir: $CoreDir"
