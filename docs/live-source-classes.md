@@ -33,6 +33,20 @@ Then start the core against it:
 .\scripts\run-live-core.ps1 -PgDsn "postgres://ontovela:ontovela@localhost:5432/ontovela_live?sslmode=disable"
 ```
 
-2026-08-13 result: 5/5 `TestLive*` tests PASS against a real core backed by
+2026-08-13 result: 5/5 `TestLive*` source-class tests PASS against a real core backed by
 PostgreSQL on `ontovela_live`; the default `ontovela` database returned 500 on
 writes because it carries EE RLS policies.
+
+## Cross-product consumption (2026-08-13)
+
+`live/consumption_test.go` adds live ORCHADYN/PEIRAVELA consumption over the
+same real core + PostgreSQL:
+
+| Consumer | Test | Proof |
+| --- | --- | --- |
+| ORCHADYN | `TestLiveOrchadynRealityViewConsumption` | Reality View from an observed sensor binding → status `ready`, item acceptable, state kind stays `observed` |
+| PEIRAVELA | `TestLivePeiravelaSignedSnapshotConsumption` | signed snapshot created + verified; simulated branch diverges (`delta=diverges`) with real state never promoted from `observed` |
+
+Note: `source_bindings` enforces `UNIQUE (tenant_id, source_ref, property)`, so
+each test uses a distinct source (and the simulated branch gets its own
+binding).
