@@ -11,8 +11,8 @@ New-Item -ItemType Directory -Force -Path $Temp | Out-Null
 
 if (Test-Path (Join-Path $CoreBackend "go.mod")) {
     Push-Location $CoreBackend
-    $Ld = if ($env:LD_FLAGS) { "-ldflags `"$env:LD_FLAGS`"" } else { "" }
-    go build $Ld -o (Join-Path $Temp "ontovela.exe") ./cmd/ontovela
+    if ($env:LD_FLAGS) { go build "-ldflags=$env:LD_FLAGS" -o (Join-Path $Temp "ontovela.exe") ./cmd/ontovela }
+    else { go build -o (Join-Path $Temp "ontovela.exe") ./cmd/ontovela }
     if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
     Pop-Location
 } else {

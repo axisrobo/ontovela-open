@@ -4,7 +4,7 @@
 
 - Version-alignment tag with core/EE v0.62.0-beta; no new public-contract changes (contract drift guard remains green)
 
-## v0.51.0 – v0.61.0-beta
+## v0.51.0 – v0.61.0
 
 - Cross-SDK method parity harness, get-relation contract, contributing guide
 - Snapshot policy exposed in verify response
