@@ -264,7 +264,7 @@ paths:
         - $ref: '#/components/parameters/AsOf'
         - $ref: '#/components/parameters/AsKnown'
       responses:
-        '200': { description: Resolved, unknown, or conflicted state view, content: { application/json: { schema: { $ref: '#/components/schemas/ResolvedState' } } } }
+        '200': { description: "Resolved, unknown, or conflicted state view", content: { application/json: { schema: { $ref: '#/components/schemas/ResolvedState' } } } }
   /v1/subscriptions/{consumer_id}:
     get:
       summary: Read a consumer's committed change-feed offset
