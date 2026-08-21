@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.0
+
+- General availability: stable public contracts aligned with core; drift guard green
+- Error model `{error, detail, code}` documented in the compatibility reference
+- Cross-SDK method parity enforced by `contract/drift_test.go`; Go/Python/TypeScript SDKs green via local CI
+- 32 protocol adapters over the shared base contract; live source-class and ORCHADYN/PEIRAVELA consumption suites
+- Version policy: open tags the same number as core; no pre-release suffixes
+
 ## v0.62.0
 
 - Version-alignment tag with core/EE v0.62.0-beta; no new public-contract changes (contract drift guard remains green)

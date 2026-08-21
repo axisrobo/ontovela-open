@@ -74,9 +74,10 @@ See `docs/repository-boundary.md`.
 
 ## Status
 
-**Beta (v0.62.0-beta)**. Public contracts are drift-guarded against the core,
+**v1.0.0 (GA)**. Public contracts are drift-guarded against the core,
 Go/Python/TypeScript SDKs pass parity checks, and CI covers 32 protocol
-adapters over the shared base contract.
+adapters over the shared base contract. Local CI runs via the core
+repository's `backend/scripts/local-ci.ps1`.
 
 ## Adapters
 
